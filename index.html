@@ -302,12 +302,12 @@ section{padding:100px 5%}
 .process-steps{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:2px;margin-top:60px;position:relative;
+  border-radius:16px;overflow:hidden; /* FIX: moved border-radius to wrapper */
 }
 .process-step{
   padding:40px 32px;background:var(--bg2);position:relative;transition:background 0.3s;
 }
-.process-step:first-child{border-radius:16px 0 0 16px}
-.process-step:last-child{border-radius:0 16px 16px 0}
+/* REMOVED individual first/last-child border-radius — wrapper handles it now */
 .process-step:hover{background:var(--bg3)}
 .step-num{
   font-family:var(--font-display);font-size:80px;font-weight:700;
@@ -318,7 +318,7 @@ section{padding:100px 5%}
 .step-title{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:10px;font-style:italic}
 .step-desc{color:var(--text-sub);font-size:14px;font-weight:300;line-height:1.6}
 
-/* ── POSTER SCROLL SECTION (updated to match AI videos style) ── */
+/* ── POSTER SCROLL SECTION ── */
 #posters{background:var(--bg2)}
 .poster-label{
   display:inline-block;padding:8px 18px;border-radius:8px;
@@ -357,7 +357,6 @@ section{padding:100px 5%}
 .poster-frame-label{
   font-size:13px;color:#fff;font-weight:500;letter-spacing:0.3px;
 }
-/* Top shimmer accent on hover */
 .poster-frame::before{
   content:'';position:absolute;top:0;left:0;right:0;
   height:3px;
@@ -665,8 +664,6 @@ footer{
 @media(max-width:768px){
   nav{padding:16px 5%}
   .nav-links{display:none}
-  .process-step:first-child,.process-step:last-child{border-radius:0}
-  .process-steps{border-radius:16px;overflow:hidden}
   #cta{padding:100px 5%}
   footer{flex-direction:column;text-align:center}
   .tab-btn{min-width:120px;padding:16px 16px;font-size:13px}
@@ -687,7 +684,8 @@ footer{
     <li><a href="#" onclick="switchTab('ai');return false;">AI Videos</a></li>
     <li><a href="#" onclick="switchTab('posters');return false;">Posters</a></li>
     <li><a href="#" onclick="switchTab('linkedin');return false;">LinkedIn</a></li>
-    <li><a href="#testimonials">Clients</a></li>
+    <!-- FIX 3: nav Clients link — switches to linkedin tab first, then scrolls to testimonials -->
+    <li><a href="#" onclick="switchTab('linkedin');setTimeout(function(){document.getElementById('testimonials').scrollIntoView({behavior:'smooth'})},350);return false;">Clients</a></li>
   </ul>
   <a href="https://wa.me/918825756068?text=Hi%20I%20want%20to%20hire%20you" class="nav-cta" target="_blank" rel="noopener">Hire Me</a>
 </nav>
@@ -1249,71 +1247,82 @@ footer{
 </footer>
 
 <script>
+// ── REVEAL OBSERVER — initialized ONCE, not on every scroll ──
+// FIX 1: Single IntersectionObserver instance prevents memory leak and double-firing
+var revealObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+function triggerReveals() {
+  document.querySelectorAll('.tab-panel.active .reveal:not(.visible)')
+    .forEach(function(el) { revealObserver.observe(el); });
+}
+
 // ── TAB SWITCHING ──
+// FIX 2: scroll to page top on tab switch instead of scrollIntoView mid-page
 function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
-  document.querySelector('.tab-nav-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   setTimeout(triggerReveals, 100);
 }
 
-// ── SCROLL REVEAL ──
-function triggerReveals() {
-  const reveals = document.querySelectorAll('.tab-panel.active .reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-  reveals.forEach(el => {
-    if (!el.classList.contains('visible')) observer.observe(el);
-    else el.classList.add('visible');
-  });
-}
-document.addEventListener('DOMContentLoaded', triggerReveals);
-window.addEventListener('scroll', triggerReveals, {passive:true});
+// ── INIT on DOMContentLoaded ──
+document.addEventListener('DOMContentLoaded', function() {
+  triggerReveals();
+});
+
+// ── SCROLL: trigger reveals for elements entering viewport ──
+window.addEventListener('scroll', triggerReveals, { passive: true });
 
 // ── COUNTER ANIMATION ──
 function animateCounter(el) {
-  const target = parseInt(el.dataset.target);
-  const duration = 1800;
-  let current = 0;
-  const inc = target / (duration / 16);
-  const timer = setInterval(() => {
+  var target = parseInt(el.dataset.target);
+  var duration = 1800;
+  var current = 0;
+  var inc = target / (duration / 16);
+  var timer = setInterval(function() {
     current = Math.min(current + inc, target);
     el.textContent = Math.floor(current);
     if (current >= target) { clearInterval(timer); el.textContent = target; }
   }, 16);
 }
-const counterObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
+var counterObs = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
     if (e.isIntersecting) { animateCounter(e.target); counterObs.unobserve(e.target); }
   });
 }, { threshold: 0.5 });
-document.querySelectorAll('.counter').forEach(el => counterObs.observe(el));
+document.querySelectorAll('.counter').forEach(function(el) { counterObs.observe(el); });
 
 // ── CINEMA VIDEO HOVER ──
-const cinemaSingle = document.getElementById('cinemaSingle');
-const cinemaVideo = document.getElementById('cinemaVideo');
+var cinemaSingle = document.getElementById('cinemaSingle');
+var cinemaVideo = document.getElementById('cinemaVideo');
 if (cinemaSingle && cinemaVideo) {
-  cinemaSingle.addEventListener('mouseenter', () => cinemaVideo.play());
-  cinemaSingle.addEventListener('mouseleave', () => { cinemaVideo.pause(); cinemaVideo.currentTime = 0; });
+  cinemaSingle.addEventListener('mouseenter', function() { cinemaVideo.play(); });
+  cinemaSingle.addEventListener('mouseleave', function() { cinemaVideo.pause(); cinemaVideo.currentTime = 0; });
 }
 
 // ── NAV SCROLL EFFECT ──
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('navbar');
+window.addEventListener('scroll', function() {
+  var nav = document.getElementById('navbar');
   nav.style.padding = window.scrollY > 50 ? '14px 5%' : '20px 5%';
 });
 
 // ── HERO PARALLAX ──
-window.addEventListener('scroll', () => {
-  const hero = document.getElementById('hero');
+window.addEventListener('scroll', function() {
+  var hero = document.getElementById('hero');
   if (!hero) return;
-  const bg = hero.querySelector('.hero-bg');
-  const scroll = window.scrollY;
-  if (scroll < window.innerHeight) bg.style.transform = `translateY(${scroll * 0.3}px)`;
-}, {passive:true});
+  var bg = hero.querySelector('.hero-bg');
+  var scroll = window.scrollY;
+  if (scroll < window.innerHeight) bg.style.transform = 'translateY(' + (scroll * 0.3) + 'px)';
+}, { passive: true });
 </script>
 </body>
 </html>
