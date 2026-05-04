@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeltria_vision — AI Video Creator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090B;
+  --bg2:#111113;
+  --bg3:#18181B;
+  --glass:rgba(255,255,255,0.04);
+  --glass-border:rgba(255,255,255,0.08);
+  --glass-hover:rgba(255,255,255,0.07);
+  --blue:#3B82F6;
+  --blue-glow:rgba(59,130,246,0.25);
+  --purple:#8B5CF6;
+  --purple-glow:rgba(139,92,246,0.2);
+  --text:#F4F4F5;
+  --text-muted:#71717A;
+  --text-sub:#A1A1AA;
+  --accent-grad:linear-gradient(135deg,#3B82F6,#8B5CF6);
+  --font-display:'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-body:'Outfit', 'DM Sans', system-ui, sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+::selection{background:rgba(139,92,246,0.3);color:#fff}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:20px 5%;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(9,9,11,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:all 0.3s;
+}
+.nav-logo{
+  font-family:var(--font-display);
+  font-weight:700;font-size:22px;
+  background:var(--accent-grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;letter-spacing:0.5px;font-style:italic;
+}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{
+  color:var(--text-sub);text-decoration:none;font-size:14px;
+  font-weight:400;letter-spacing:0.3px;transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{
+  padding:10px 22px;border-radius:8px;
+  background:var(--accent-grad);
+  color:#fff;text-decoration:none;font-size:14px;font-weight:500;
+  letter-spacing:0.3px;transition:opacity 0.2s,transform 0.2s;
+}
+.nav-cta:hover{opacity:0.9;transform:translateY(-1px)}
+
+/* HERO */
+#hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 5% 80px;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(59,130,246,0.12) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 40% at 80% 80%,rgba(139,92,246,0.08) 0%,transparent 60%);
+  pointer-events:none;
+}
+.hero-noise{
+  position:absolute;inset:0;opacity:0.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 18px;border-radius:100px;
+  background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);
+  font-size:13px;color:var(--blue);font-weight:500;letter-spacing:0.5px;
+  margin-bottom:32px;animation:fadeUp 0.8s ease both;
+}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.hero-headline{
+  font-family:var(--font-display);
+  font-size:clamp(52px,8vw,112px);
+  font-weight:700;line-height:0.95;letter-spacing:-1px;
+  margin-bottom:28px;animation:fadeUp 0.8s 0.1s ease both;font-style:italic;
+}
+.hero-headline .grad{
+  background:var(--accent-grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-style:normal;
+}
+.hero-sub{
+  font-size:clamp(16px,1.8vw,20px);
+  color:var(--text-sub);max-width:520px;margin:0 auto 52px;
+  font-weight:300;letter-spacing:0.2px;animation:fadeUp 0.8s 0.2s ease both;
+}
+.hero-actions{
+  display:flex;gap:16px;justify-content:center;flex-wrap:wrap;
+  animation:fadeUp 0.8s 0.3s ease both;
+}
+.btn-hire-hero{
+  padding:18px 52px;border-radius:10px;
+  background:var(--accent-grad);color:#fff;
+  text-decoration:none;font-weight:600;font-size:17px;
+  letter-spacing:0.4px;transition:transform 0.2s,box-shadow 0.2s;
+  box-shadow:0 0 0 0 var(--blue-glow);
+}
+.btn-hire-hero:hover{transform:translateY(-3px);box-shadow:0 12px 40px var(--blue-glow)}
+.btn-primary{
+  padding:16px 36px;border-radius:10px;
+  background:var(--accent-grad);color:#fff;
+  text-decoration:none;font-weight:500;font-size:16px;
+  transition:transform 0.2s,box-shadow 0.2s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px var(--blue-glow)}
+.btn-outline{
+  padding:16px 36px;border-radius:10px;
+  background:var(--glass);border:1px solid var(--glass-border);color:var(--text);
+  text-decoration:none;font-weight:500;font-size:16px;
+  transition:background 0.2s,transform 0.2s;backdrop-filter:blur(10px);
+}
+.btn-outline:hover{background:var(--glass-hover);transform:translateY(-2px)}
+
+/* ── TAB NAVIGATION ── */
+.tab-nav-wrap{
+  position:sticky;top:60px;z-index:90;
+  background:rgba(9,9,11,0.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.tab-nav{
+  display:flex;align-items:stretch;max-width:100%;overflow-x:auto;
+  scrollbar-width:none;
+}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex:1;min-width:160px;
+  padding:18px 28px;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--font-body);font-size:14px;font-weight:500;
+  color:var(--text-muted);letter-spacing:0.5px;
+  position:relative;transition:color 0.25s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  border-right:1px solid rgba(255,255,255,0.04);
+  white-space:nowrap;
+}
+.tab-btn:last-child{border-right:none}
+.tab-btn .tab-num{
+  font-family:var(--font-display);font-size:11px;font-style:italic;
+  opacity:0.4;transition:opacity 0.25s;
+}
+.tab-btn::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:2px;background:var(--accent-grad);
+  transform:scaleX(0);transition:transform 0.3s ease;
+  transform-origin:center;
+}
+.tab-btn:hover{color:var(--text-sub)}
+.tab-btn.active{color:var(--text)}
+.tab-btn.active .tab-num{opacity:0.7}
+.tab-btn.active::after{transform:scaleX(1)}
+
+/* TAB PANELS */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* PART LABEL BANNER */
+.part-banner{
+  padding:56px 5% 40px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);
+  position:relative;overflow:hidden;
+}
+.part-banner::before{
+  content:'';position:absolute;inset:0;
+  pointer-events:none;
+}
+.part-banner-inner{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.part-banner-num{
+  font-family:var(--font-display);font-size:clamp(80px,10vw,140px);
+  font-weight:700;font-style:italic;
+  color:rgba(255,255,255,0.04);
+  line-height:1;user-select:none;
+  position:absolute;right:5%;top:50%;transform:translateY(-50%);
+}
+.part-banner-label{
+  font-size:11px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--blue);font-weight:600;margin-bottom:8px;
+}
+.part-banner-title{
+  font-family:var(--font-display);
+  font-size:clamp(32px,4.5vw,60px);
+  font-weight:700;font-style:italic;line-height:1.05;letter-spacing:-0.3px;
+}
+.part-banner-title span{
+  background:var(--accent-grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+/* SECTIONS */
+section{padding:100px 5%}
+.section-label{
+  font-size:11px;letter-spacing:4px;text-transform:uppercase;
+  color:var(--blue);font-weight:600;margin-bottom:16px;
+}
+.section-title{
+  font-family:var(--font-display);
+  font-size:clamp(36px,5vw,68px);
+  font-weight:700;line-height:1.05;letter-spacing:-0.5px;
+  margin-bottom:20px;font-style:italic;
+}
+.section-sub{
+  color:var(--text-sub);font-size:18px;font-weight:300;max-width:580px;letter-spacing:0.1px;
+}
+
+/* RESULTS */
+#results{
+  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+  text-align:center;
+}
+.metrics-row{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:2px;margin-top:64px;
+  border:1px solid var(--glass-border);border-radius:20px;overflow:hidden;
+}
+.metric-item{
+  padding:60px 40px;background:var(--bg2);position:relative;transition:background 0.3s;
+}
+.metric-item:hover{background:var(--bg3)}
+.metric-item::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at center,rgba(59,130,246,0.05),transparent 70%);
+  opacity:0;transition:opacity 0.3s;
+}
+.metric-item:hover::after{opacity:1}
+.metric-num{
+  font-family:var(--font-display);
+  font-size:clamp(56px,6vw,92px);font-weight:700;
+  background:var(--accent-grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;letter-spacing:-1px;display:block;font-style:italic;
+}
+.metric-label{font-size:16px;color:var(--text-sub);margin-top:12px;font-weight:300}
+.metric-sub{font-size:13px;color:var(--text-muted);margin-top:6px}
+
+/* SERVICES */
+#services{background:var(--bg2)}
+.cards-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:16px;margin-top:60px;
+}
+.service-card{
+  padding:36px;border-radius:16px;
+  background:var(--glass);border:1px solid var(--glass-border);
+  transition:transform 0.3s,border-color 0.3s,box-shadow 0.3s;
+  position:relative;overflow:hidden;
+}
+.service-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at top left,rgba(59,130,246,0.08),transparent 60%);
+  opacity:0;transition:opacity 0.3s;
+}
+.service-card:hover{
+  transform:translateY(-4px) scale(1.01);
+  border-color:rgba(59,130,246,0.3);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4),0 0 0 1px rgba(59,130,246,0.1);
+}
+.service-card:hover::before{opacity:1}
+.service-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(139,92,246,0.15));
+  border:1px solid rgba(59,130,246,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:24px;
+}
+.service-name{
+  font-family:var(--font-display);font-size:24px;font-weight:700;
+  margin-bottom:10px;letter-spacing:0.2px;font-style:italic;
+}
+.service-desc{color:var(--text-sub);font-size:15px;font-weight:300;line-height:1.6}
+
+/* PROCESS */
+#process{background:var(--bg)}
+.process-steps{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:2px;margin-top:60px;position:relative;
+}
+.process-step{
+  padding:40px 32px;background:var(--bg2);position:relative;transition:background 0.3s;
+}
+.process-step:first-child{border-radius:16px 0 0 16px}
+.process-step:last-child{border-radius:0 16px 16px 0}
+.process-step:hover{background:var(--bg3)}
+.step-num{
+  font-family:var(--font-display);font-size:80px;font-weight:700;
+  color:rgba(255,255,255,0.04);line-height:1;
+  position:absolute;top:16px;right:20px;font-style:italic;
+}
+.step-icon{font-size:28px;margin-bottom:20px;display:block}
+.step-title{font-family:var(--font-display);font-size:22px;font-weight:700;margin-bottom:10px;font-style:italic}
+.step-desc{color:var(--text-sub);font-size:14px;font-weight:300;line-height:1.6}
+
+/* ── POSTER SCROLL SECTION (updated to match AI videos style) ── */
+#posters{background:var(--bg2)}
+.poster-label{
+  display:inline-block;padding:8px 18px;border-radius:8px;
+  background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);
+  font-size:13px;color:var(--purple);margin-bottom:20px;font-weight:400;letter-spacing:0.3px;
+}
+.posters-scroll{
+  display:flex;gap:16px;overflow-x:auto;padding:16px 0 20px;
+  scrollbar-width:thin;scrollbar-color:var(--glass-border) transparent;
+}
+.poster-frame{
+  flex:0 0 240px;border-radius:18px;overflow:hidden;
+  background:var(--bg3);border:2px solid var(--glass-border);
+  position:relative;transition:transform 0.3s,box-shadow 0.3s;
+  cursor:pointer;
+}
+.poster-frame:hover{
+  transform:scale(1.03) translateY(-6px);
+  box-shadow:0 28px 64px rgba(0,0,0,0.65),0 0 0 1px rgba(139,92,246,0.25);
+}
+.poster-frame img{
+  width:100%;
+  aspect-ratio:3/4;
+  object-fit:cover;
+  display:block;
+  transition:transform 0.5s ease;
+}
+.poster-frame:hover img{transform:scale(1.04)}
+.poster-frame-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,0.72) 0%,transparent 50%);
+  opacity:0;transition:opacity 0.3s;
+  display:flex;align-items:flex-end;padding:18px;
+}
+.poster-frame:hover .poster-frame-overlay{opacity:1}
+.poster-frame-label{
+  font-size:13px;color:#fff;font-weight:500;letter-spacing:0.3px;
+}
+/* Top shimmer accent on hover */
+.poster-frame::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:3px;
+  background:var(--accent-grad);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 0.35s ease;
+  z-index:2;
+}
+.poster-frame:hover::before{transform:scaleX(1)}
+
+/* LinkedIn */
+#linkedin-port{background:var(--bg)}
+.linkedin-scroll{
+  display:flex;gap:16px;overflow-x:auto;padding:56px 0 20px;
+  scrollbar-width:thin;scrollbar-color:var(--glass-border) transparent;
+}
+.linkedin-card{
+  flex:0 0 280px;border-radius:14px;overflow:hidden;background:var(--bg3);
+  border:1px solid var(--glass-border);transition:transform 0.3s,box-shadow 0.3s;
+}
+.linkedin-card:hover{transform:translateY(-4px);box-shadow:0 20px 50px rgba(0,0,0,0.5)}
+.linkedin-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.linkedin-card-body{padding:16px}
+.linkedin-insight{font-size:13px;color:var(--text-sub);font-weight:300}
+
+/* ── LINKEDIN DEEP-DIVE BANNER ── */
+#linkedin-more{
+  background:var(--bg2);
+  padding:80px 5%;
+  position:relative;overflow:hidden;
+}
+#linkedin-more::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 120% at 0% 50%, rgba(10,102,194,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 80% at 100% 50%, rgba(139,92,246,0.07) 0%, transparent 60%);
+  pointer-events:none;
+}
+.lm-inner{
+  position:relative;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:48px;flex-wrap:wrap;
+  border:1px solid rgba(10,102,194,0.22);
+  border-radius:24px;
+  padding:56px 60px;
+  background:rgba(10,102,194,0.04);
+  backdrop-filter:blur(6px);
+}
+.lm-left{flex:1;min-width:260px}
+.lm-eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  margin-bottom:20px;
+}
+.lm-eyebrow-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#0A66C2,#0077B5);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.lm-eyebrow-icon svg{width:16px;height:16px;fill:#fff}
+.lm-eyebrow-text{
+  font-size:11px;letter-spacing:4px;text-transform:uppercase;
+  color:#4DA6FF;font-weight:600;
+}
+.lm-title{
+  font-family:var(--font-display);
+  font-size:clamp(28px,3.5vw,48px);
+  font-weight:700;line-height:1.08;letter-spacing:-0.3px;
+  font-style:italic;
+  margin-bottom:16px;
+}
+.lm-title span{
+  background:linear-gradient(135deg,#4DA6FF,#8B5CF6);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.lm-desc{
+  color:var(--text-sub);font-size:16px;font-weight:300;
+  line-height:1.7;max-width:480px;margin-bottom:0;
+}
+.lm-right{
+  display:flex;flex-direction:column;align-items:flex-start;
+  gap:20px;flex-shrink:0;
+}
+.lm-pills{
+  display:flex;flex-wrap:wrap;gap:10px;
+}
+.lm-pill{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 16px;border-radius:100px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.09);
+  font-size:13px;color:var(--text-sub);font-weight:400;
+}
+.lm-pill::before{
+  content:'✓';font-size:11px;
+  color:#4DA6FF;font-weight:700;
+}
+.lm-cta{
+  display:inline-flex;align-items:center;gap:12px;
+  padding:16px 32px;border-radius:12px;
+  background:linear-gradient(135deg,#0A66C2,#4DA6FF);
+  color:#fff;text-decoration:none;font-weight:600;font-size:16px;
+  letter-spacing:0.2px;transition:transform 0.25s,box-shadow 0.25s;
+  box-shadow:0 0 0 rgba(10,102,194,0);
+  white-space:nowrap;
+}
+.lm-cta:hover{
+  transform:translateY(-3px) scale(1.02);
+  box-shadow:0 16px 48px rgba(10,102,194,0.35);
+}
+.lm-cta-arrow{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  font-size:13px;transition:transform 0.2s;
+}
+.lm-cta:hover .lm-cta-arrow{transform:translateX(3px)}
+
+@media(max-width:768px){
+  .lm-inner{padding:36px 28px;flex-direction:column;align-items:flex-start}
+  .lm-right{width:100%}
+  .lm-cta{width:100%;justify-content:center}
+}
+
+/* AI Videos 9:16 */
+#ai-videos-vertical{background:var(--bg2)}
+.vertical-label{
+  display:inline-block;padding:8px 18px;border-radius:8px;
+  background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);
+  font-size:13px;color:var(--purple);margin-bottom:20px;font-weight:400;letter-spacing:0.3px;
+}
+.videos-scroll{
+  display:flex;gap:16px;overflow-x:auto;padding:16px 0 20px;
+  scrollbar-width:thin;scrollbar-color:var(--glass-border) transparent;
+}
+.phone-frame{
+  flex:0 0 220px;border-radius:24px;overflow:hidden;
+  background:var(--bg3);border:2px solid var(--glass-border);
+  position:relative;transition:transform 0.3s,box-shadow 0.3s;
+}
+.phone-frame:hover{
+  transform:scale(1.03) translateY(-4px);
+  box-shadow:0 24px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(139,92,246,0.2);
+}
+.phone-frame video{width:100%;aspect-ratio:9/16;object-fit:cover;display:block}
+.phone-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,0.5),transparent 40%);
+  pointer-events:none;
+}
+
+/* AI Videos 16:9 */
+#ai-videos-wide{background:var(--bg)}
+.cinema-single{
+  margin-top:56px;border-radius:20px;overflow:hidden;background:var(--bg3);
+  border:1px solid var(--glass-border);transition:box-shadow 0.3s;
+  max-width:900px;margin-left:auto;margin-right:auto;
+}
+.cinema-single:hover{
+  box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(59,130,246,0.15);
+}
+.cinema-single-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;cursor:pointer}
+.cinema-single-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.cinema-single-hover{
+  position:absolute;inset:0;background:rgba(0,0,0,0.4);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.3s;
+}
+.cinema-single:hover .cinema-single-hover{opacity:1}
+.play-icon-lg{
+  width:64px;height:64px;border-radius:50%;
+  background:rgba(255,255,255,0.9);
+  display:flex;align-items:center;justify-content:center;
+}
+.cinema-single-info{
+  padding:24px 28px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.cinema-single-title{font-family:var(--font-display);font-size:20px;font-weight:700;font-style:italic}
+.cinema-single-meta{font-size:13px;color:var(--text-muted)}
+
+/* Video Editing */
+#video-edit{background:var(--bg2)}
+.edit-statement{
+  font-family:var(--font-display);
+  font-size:clamp(20px,2.8vw,32px);
+  font-weight:600;color:var(--text-sub);
+  max-width:700px;margin:0 auto 60px;text-align:center;line-height:1.4;font-style:italic;
+}
+.edit-statement span{color:var(--text)}
+.edit-scroll{
+  display:flex;gap:16px;overflow-x:auto;padding:16px 0 20px;
+  scrollbar-width:thin;scrollbar-color:var(--glass-border) transparent;
+}
+.edit-phone{
+  flex:0 0 220px;border-radius:24px;overflow:hidden;
+  background:var(--bg3);border:2px solid var(--glass-border);
+  position:relative;transition:transform 0.3s,box-shadow 0.3s;
+}
+.edit-phone:hover{
+  transform:scale(1.03) translateY(-4px);
+  box-shadow:0 24px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(59,130,246,0.2);
+}
+.edit-phone video{width:100%;aspect-ratio:9/16;object-fit:cover;display:block}
+.edit-phone-label{
+  padding:12px 16px;font-size:12px;color:var(--text-sub);
+  border-top:1px solid var(--glass-border);text-align:center;
+}
+.edit-phone-overlay{
+  position:absolute;top:0;left:0;right:0;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.4),transparent 40%);
+  pointer-events:none;height:80px;
+}
+
+/* TESTIMONIALS */
+#testimonials{background:var(--bg);overflow:hidden;padding-bottom:80px}
+.testi-track-wrap{
+  position:relative;margin-top:60px;
+  mask-image:linear-gradient(to right,transparent 0%,black 8%,black 92%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,black 8%,black 92%,transparent 100%);
+}
+.testi-track{
+  display:flex;gap:20px;width:max-content;
+  animation:marqueeScroll 40s linear infinite;
+}
+.testi-track:hover{animation-play-state:paused}
+@keyframes marqueeScroll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.testi-card{
+  width:340px;flex-shrink:0;padding:32px;border-radius:16px;
+  background:var(--glass);border:1px solid var(--glass-border);
+  position:relative;transition:border-color 0.3s;
+}
+.testi-card:hover{border-color:rgba(139,92,246,0.35)}
+.quote-mark{
+  font-family:var(--font-display);font-size:80px;line-height:0.5;
+  color:rgba(139,92,246,0.2);margin-bottom:24px;display:block;font-style:italic;
+}
+.testi-text{
+  font-size:15px;line-height:1.7;color:var(--text-sub);
+  font-weight:300;font-style:italic;margin-bottom:24px;
+}
+.testi-author{
+  display:flex;align-items:center;gap:14px;
+  padding-top:20px;border-top:1px solid var(--glass-border);
+}
+.author-avatar{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--accent-grad);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.author-name{font-size:14px;font-weight:500}
+.author-role{font-size:13px;color:var(--text-muted)}
+
+/* CTA */
+#cta{
+  background:var(--bg2);text-align:center;
+  position:relative;overflow:hidden;padding:140px 5%;
+}
+.cta-glow{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 80% at 50% 50%,rgba(59,130,246,0.07),transparent 70%),
+             radial-gradient(ellipse 60% 60% at 20% 80%,rgba(139,92,246,0.06),transparent 70%);
+  pointer-events:none;
+}
+.cta-title{
+  font-family:var(--font-display);
+  font-size:clamp(44px,7vw,96px);
+  font-weight:700;line-height:0.95;letter-spacing:-0.5px;
+  margin-bottom:24px;font-style:italic;
+}
+.cta-sub{font-size:18px;color:var(--text-sub);font-weight:300;margin-bottom:48px}
+
+/* FOOTER */
+footer{
+  padding:32px 5%;border-top:1px solid var(--glass-border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;
+}
+.footer-logo{
+  font-family:var(--font-display);font-size:18px;font-weight:700;
+  background:var(--accent-grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-style:italic;
+}
+.footer-copy{font-size:13px;color:var(--text-muted)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-delay-1{transition-delay:0.1s}
+.reveal-delay-2{transition-delay:0.2s}
+.reveal-delay-3{transition-delay:0.3s}
+.reveal-delay-4{transition-delay:0.4s}
+
+/* DIVIDER */
+.section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:0}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav{padding:16px 5%}
+  .nav-links{display:none}
+  .process-step:first-child,.process-step:last-child{border-radius:0}
+  .process-steps{border-radius:16px;overflow:hidden}
+  #cta{padding:100px 5%}
+  footer{flex-direction:column;text-align:center}
+  .tab-btn{min-width:120px;padding:16px 16px;font-size:13px}
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{height:4px;width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">Zeltria_vision</div>
+  <ul class="nav-links">
+    <li><a href="#" onclick="switchTab('ai');return false;">AI Videos</a></li>
+    <li><a href="#" onclick="switchTab('posters');return false;">Posters</a></li>
+    <li><a href="#" onclick="switchTab('linkedin');return false;">LinkedIn</a></li>
+    <li><a href="#testimonials">Clients</a></li>
+  </ul>
+  <a href="https://wa.me/918825756068?text=Hi%20I%20want%20to%20hire%20you" class="nav-cta" target="_blank" rel="noopener">Hire Me</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-noise"></div>
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    Available for projects
+  </div>
+  <h1 class="hero-headline">
+    I engineer content<br>
+    people <span class="grad">can't scroll past.</span>
+  </h1>
+  <p class="hero-sub">
+    AI Video Creator building high-retention, viral storytelling systems.
+  </p>
+  <div class="hero-actions">
+    <a href="https://wa.me/918825756068?text=Hi%20I%20want%20to%20hire%20you" class="btn-hire-hero" target="_blank" rel="noopener">Hire Me</a>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- TAB NAVIGATION -->
+<div class="tab-nav-wrap">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('ai')" id="tab-ai">
+      <span class="tab-num">01</span> AI Videos
+    </button>
+    <button class="tab-btn" onclick="switchTab('posters')" id="tab-posters">
+      <span class="tab-num">02</span> Posters
+    </button>
+    <button class="tab-btn" onclick="switchTab('linkedin')" id="tab-linkedin">
+      <span class="tab-num">03</span> LinkedIn Growth
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 1: AI VIDEOS                          -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-ai">
+
+  <!-- Part Banner -->
+  <div class="part-banner">
+    <div class="part-banner-inner">
+      <div>
+        <div class="part-banner-label">Part One</div>
+        <h2 class="part-banner-title"><span>AI Videos</span> — Engineered for Attention</h2>
+      </div>
+    </div>
+    <div class="part-banner-num">01</div>
+  </div>
+
+  <!-- AI VIDEOS 9:16 -->
+  <section id="ai-videos-vertical">
+    <div class="vertical-label">Built for Shorts, Reels &amp; Attention Economy</div>
+    <div class="section-label reveal">AI Video Projects</div>
+    <h2 class="section-title reveal reveal-delay-1">Vertical content<br>that dominates feeds.</h2>
+    <div class="videos-scroll reveal reveal-delay-2">
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%208.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%202.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%204.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%203.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%207.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%206.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%205.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%209.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%2010.mp4" autoplay muted loop playsinline></video>
+        <div class="phone-overlay"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI VIDEOS 16:9 -->
+  <section id="ai-videos-wide">
+    <div class="section-label reveal">Cinematic AI Video</div>
+    <h2 class="section-title reveal reveal-delay-1" style="text-align:center">Widescreen.<br>Cinematic. Engineered.</h2>
+    <div class="cinema-single reveal reveal-delay-2" id="cinemaSingle">
+      <div class="cinema-single-thumb">
+        <video id="cinemaVideo" src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4" muted loop></video>
+        <div class="cinema-single-hover">
+          <div class="play-icon-lg">
+            <div style="width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #111;margin-left:4px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="cinema-single-info">
+        <div>
+          <div class="cinema-single-title">AI Brand Video</div>
+          <div class="cinema-single-meta">LinkedIn · High Retention Format · AI-Powered Production</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO EDITING -->
+  <section id="video-edit">
+    <div class="section-label reveal">Video Editing</div>
+    <h2 class="section-title reveal reveal-delay-1" style="text-align:center">Every second is engineered<br>for retention.</h2>
+    <p class="edit-statement reveal reveal-delay-2">
+      <span>Not just cuts.</span> Emotional pacing. Psychological hooks.
+      <span>Cinematic storytelling</span> that makes people watch twice.
+    </p>
+    <div class="edit-scroll reveal reveal-delay-3">
+      <div class="edit-phone">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%201.mp4" autoplay muted loop playsinline></video>
+        <div class="edit-phone-overlay"></div>
+        <div class="edit-phone-label">Edit 01 · Retention-optimized</div>
+      </div>
+      <div class="edit-phone">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%202.mp4" autoplay muted loop playsinline></video>
+        <div class="edit-phone-overlay"></div>
+        <div class="edit-phone-label">Edit 02 · Cinematic pacing</div>
+      </div>
+      <div class="edit-phone">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%203.mp4" autoplay muted loop playsinline></video>
+        <div class="edit-phone-overlay"></div>
+        <div class="edit-phone-label">Edit 03 · Hook-driven cuts</div>
+      </div>
+      <div class="edit-phone">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%204.mp4" autoplay muted loop playsinline></video>
+        <div class="edit-phone-overlay"></div>
+        <div class="edit-phone-label">Edit 04 · Brand storytelling</div>
+      </div>
+      <div class="edit-phone">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%205.mp4" autoplay muted loop playsinline></video>
+        <div class="edit-phone-overlay"></div>
+        <div class="edit-phone-label">Edit 05 · Scroll-stop format</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- RESULTS -->
+  <section id="results">
+    <div class="section-label reveal">Impact</div>
+    <h2 class="section-title reveal reveal-delay-1">Results clients<br>care about.</h2>
+    <div class="metrics-row reveal reveal-delay-2">
+      <div class="metric-item">
+        <span class="metric-num counter" data-target="10">0</span><span class="metric-num" style="font-size:clamp(40px,4vw,60px)">M+</span>
+        <div class="metric-label">Views Generated</div>
+        <div class="metric-sub">Across platforms</div>
+      </div>
+      <div class="metric-item">
+        <span class="metric-num">∞</span>
+        <div class="metric-label">High-Retention Content Systems</div>
+        <div class="metric-sub">Built to hold attention</div>
+      </div>
+      <div class="metric-item">
+        <span class="metric-num counter" data-target="250">0</span><span class="metric-num" style="font-size:clamp(40px,4vw,60px)">%</span>
+        <div class="metric-label">Engagement Growth</div>
+        <div class="metric-sub">Average client result</div>
+      </div>
+      <div class="metric-item">
+        <span class="metric-num">3X</span>
+        <div class="metric-label">Profile Visibility</div>
+        <div class="metric-sub">Within 90 days</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="section-label reveal">Services</div>
+    <h2 class="section-title reveal reveal-delay-1">What clients get.</h2>
+    <p class="section-sub reveal reveal-delay-2">Not deliverables. Outcomes.</p>
+    <div class="cards-grid">
+      <div class="service-card reveal">
+        <div class="service-icon">⚡</div>
+        <div class="service-name">Viral Video Strategy</div>
+        <p class="service-desc">Content engineered to hook instantly. Built for the first 3 seconds that decide everything.</p>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-icon">🤖</div>
+        <div class="service-name">AI-Powered Content Production</div>
+        <p class="service-desc">Scale content without creative burnout. AI-driven systems that produce at volume without losing quality.</p>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-icon">🎬</div>
+        <div class="service-name">Retention-Optimized Editing</div>
+        <p class="service-desc">Designed to maximize watch time. Every cut, transition, and pacing decision is intentional.</p>
+      </div>
+      <div class="service-card reveal reveal-delay-3">
+        <div class="service-icon">📈</div>
+        <div class="service-name">Platform-Specific Growth Systems</div>
+        <p class="service-desc">Built for algorithm performance. LinkedIn, Reels, Shorts — each platform demands its own language.</p>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /panel-ai -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 2: POSTERS                            -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-posters">
+
+  <!-- Part Banner -->
+  <div class="part-banner">
+    <div class="part-banner-inner">
+      <div>
+        <div class="part-banner-label">Part Two</div>
+        <h2 class="part-banner-title"><span>Posters</span> — Visual Systems That Stop the Feed</h2>
+      </div>
+    </div>
+    <div class="part-banner-num">02</div>
+  </div>
+
+  <!-- POSTER SCROLL SECTION -->
+  <section id="posters">
+    <div class="poster-label">Brand Creatives &amp; Social Visuals</div>
+    <div class="section-label reveal">Poster Portfolio</div>
+    <h2 class="section-title reveal reveal-delay-1">Visual systems<br>that stop the feed.</h2>
+    <div class="posters-scroll reveal reveal-delay-2">
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img1.png" alt="Poster 1" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Brand Poster</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img2.png" alt="Poster 2" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Content Poster</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img3.png" alt="Poster 3" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Marketing Visual</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img4.png" alt="Poster 4" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Social Creative</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img5.png" alt="Poster 5" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Brand Visual</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img6.png" alt="Poster 6" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Campaign Poster</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img7.png" alt="Poster 7" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Design Work</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img8.png" alt="Poster 8" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Visual Content</span></div>
+      </div>
+      <div class="poster-frame">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img9.png" alt="Poster 9" loading="lazy">
+        <div class="poster-frame-overlay"><span class="poster-frame-label">Creative Poster</span></div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /panel-posters -->
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 3: LINKEDIN GROWTH                    -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-linkedin">
+
+  <!-- Part Banner -->
+  <div class="part-banner">
+    <div class="part-banner-inner">
+      <div>
+        <div class="part-banner-label">Part Three</div>
+        <h2 class="part-banner-title"><span>LinkedIn Growth</span> — Authority by Design</h2>
+      </div>
+    </div>
+    <div class="part-banner-num">03</div>
+  </div>
+
+  <!-- LINKEDIN PORTFOLIO -->
+  <section id="linkedin-port">
+    <div class="section-label reveal">LinkedIn Portfolio</div>
+    <h2 class="section-title reveal reveal-delay-1">Content that<br>drives real reach.</h2>
+    <div class="linkedin-scroll reveal reveal-delay-2">
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/1l.png" alt="LinkedIn Post 1" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Hook-first structure · High engagement</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/2l.png" alt="LinkedIn Post 2" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Storytelling format · Strong retention</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/3l.png" alt="LinkedIn Post 3" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Visual-lead post · 3X reach boost</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/4l.png" alt="LinkedIn Post 4" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Authority content · Profile views spike</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/5l.png" alt="LinkedIn Post 5" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Engagement-optimized layout</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/6l.png" alt="LinkedIn Post 6" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Viral-format post · Inbound leads</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/7l.png" alt="LinkedIn Post 7" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Brand positioning content</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/8l.png" alt="LinkedIn Post 8" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Authority-building carousel</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/9l.png" alt="LinkedIn Post 9" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Thought leadership post</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/10l.png" alt="LinkedIn Post 10" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Connection-driven content</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/11l.png" alt="LinkedIn Post 11" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Scroll-stop visual hook</p></div>
+      </div>
+      <div class="linkedin-card">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/12l.png" alt="LinkedIn Post 12" loading="lazy">
+        <div class="linkedin-card-body"><p class="linkedin-insight">Personal brand content</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESS -->
+  <section id="process">
+    <div class="section-label reveal">Process</div>
+    <h2 class="section-title reveal reveal-delay-1">My LinkedIn<br>growth process.</h2>
+    <div class="process-steps reveal reveal-delay-2">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <span class="step-icon">🎣</span>
+        <div class="step-title">Hook Engineering</div>
+        <p class="step-desc">The opening 3 seconds. Crafted to stop the scroll and demand attention.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <span class="step-icon">🏗️</span>
+        <div class="step-title">Content Structuring</div>
+        <p class="step-desc">Narrative architecture that guides viewers through the full watch cycle.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <span class="step-icon">👁️</span>
+        <div class="step-title">Visual Attention Design</div>
+        <p class="step-desc">Motion, color, and pacing tuned to keep eyes locked on screen.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <span class="step-icon">🚀</span>
+        <div class="step-title">Algorithm Optimization</div>
+        <p class="step-desc">Metadata, timing, and format engineered for maximum distribution.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LINKEDIN ACCOUNT HANDLING -->
+  <section id="linkedin-more">
+    <div class="lm-inner reveal">
+      <div class="lm-left">
+        <div class="lm-eyebrow">
+          <div class="lm-eyebrow-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20.447 20.452H16.89v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.983 1.983 0 0 1-1.99-1.989 1.989 1.989 0 1 1 1.99 1.989zm1.99 13.019H3.347V9h3.98v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+          </div>
+          <span class="lm-eyebrow-text">LinkedIn Account Handling</span>
+        </div>
+        <h2 class="lm-title">
+          Want to know more about<br>
+          <span>LinkedIn account handling?</span>
+        </h2>
+        <p class="lm-desc">
+          From profile optimisation and content strategy to full account management — explore the complete LinkedIn growth system built to position you as the authority in your niche.
+        </p>
+      </div>
+      <div class="lm-right">
+        <div class="lm-pills">
+          <span class="lm-pill">Profile Optimisation</span>
+          <span class="lm-pill">Content Strategy</span>
+          <span class="lm-pill">Full Account Management</span>
+          <span class="lm-pill">Authority Positioning</span>
+          <span class="lm-pill">Inbound Lead Generation</span>
+        </div>
+        <a href="https://j-noorulfathima.github.io/Linkedin/" class="lm-cta" target="_blank" rel="noopener">
+          Explore LinkedIn Services
+          <span class="lm-cta-arrow">→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta">
+    <div class="cta-glow"></div>
+    <div class="section-label reveal">Ready?</div>
+    <h2 class="cta-title reveal reveal-delay-1">
+      Let's build something<br>
+      <span style="background:var(--accent-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">people can't ignore.</span>
+    </h2>
+    <div class="reveal reveal-delay-2">
+      <a href="https://wa.me/918825756068?text=Hi%20I%20want%20to%20hire%20you" class="btn-primary" target="_blank" rel="noopener">Contact Me</a>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section id="testimonials">
+    <div class="section-label reveal">Client Voice</div>
+    <h2 class="section-title reveal reveal-delay-1">Results, in their<br>own words.</h2>
+    <div class="testi-track-wrap reveal reveal-delay-2">
+      <div class="testi-track">
+        <!-- Set A -->
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The AI video production exceeded expectations. The visuals, motion, and editing style make the content look cinematic and engaging. Great work!</p>
+          <div class="testi-author">
+            <div class="author-avatar">B2</div>
+            <div><div class="author-name">B2B Brand</div><div class="author-role">Enterprise Client</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">After LinkedIn profile optimization, my profile appeared in search results and I began receiving inbound client messages. The content strategy was extremely professional.</p>
+          <div class="testi-author">
+            <div class="author-avatar">FS</div>
+            <div><div class="author-name">Founder</div><div class="author-role">SaaS Startup</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The poster designs are visually stunning and perfectly communicate the message. These creatives helped my content stand out and attract more audience attention.</p>
+          <div class="testi-author">
+            <div class="author-avatar">BM</div>
+            <div><div class="author-name">Brand Manager</div><div class="author-role">Consumer Brand</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The poster designs and AI videos completely changed how my LinkedIn content performs. My posts now get much higher engagement and reach. The visuals look very premium.</p>
+          <div class="testi-author">
+            <div class="author-avatar">MC</div>
+            <div><div class="author-name">Marketing Consultant</div><div class="author-role">Independent</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The AI videos created were incredibly engaging and modern. The storytelling, visuals, and animation style made the content look very premium — gave our brand a fresh feel.</p>
+          <div class="testi-author">
+            <div class="author-avatar">DM</div>
+            <div><div class="author-name">Digital Marketing Specialist</div><div class="author-role">Agency</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">From profile optimization to poster design and content planning, everything was handled professionally. My LinkedIn now looks like a premium personal brand.</p>
+          <div class="testi-author">
+            <div class="author-avatar">FC</div>
+            <div><div class="author-name">Freelance Consultant</div><div class="author-role">Personal Brand</div></div>
+          </div>
+        </div>
+        <!-- Set B — duplicate for seamless loop -->
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The AI video production exceeded expectations. The visuals, motion, and editing style make the content look cinematic and engaging. Great work!</p>
+          <div class="testi-author">
+            <div class="author-avatar">B2</div>
+            <div><div class="author-name">B2B Brand</div><div class="author-role">Enterprise Client</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">After LinkedIn profile optimization, my profile appeared in search results and I began receiving inbound client messages. The content strategy was extremely professional.</p>
+          <div class="testi-author">
+            <div class="author-avatar">FS</div>
+            <div><div class="author-name">Founder</div><div class="author-role">SaaS Startup</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The poster designs are visually stunning and perfectly communicate the message. These creatives helped my content stand out and attract more audience attention.</p>
+          <div class="testi-author">
+            <div class="author-avatar">BM</div>
+            <div><div class="author-name">Brand Manager</div><div class="author-role">Consumer Brand</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The poster designs and AI videos completely changed how my LinkedIn content performs. My posts now get much higher engagement and reach. The visuals look very premium.</p>
+          <div class="testi-author">
+            <div class="author-avatar">MC</div>
+            <div><div class="author-name">Marketing Consultant</div><div class="author-role">Independent</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">The AI videos created were incredibly engaging and modern. The storytelling, visuals, and animation style made the content look very premium — gave our brand a fresh feel.</p>
+          <div class="testi-author">
+            <div class="author-avatar">DM</div>
+            <div><div class="author-name">Digital Marketing Specialist</div><div class="author-role">Agency</div></div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <span class="quote-mark">"</span>
+          <p class="testi-text">From profile optimization to poster design and content planning, everything was handled professionally. My LinkedIn now looks like a premium personal brand.</p>
+          <div class="testi-author">
+            <div class="author-avatar">FC</div>
+            <div><div class="author-name">Freelance Consultant</div><div class="author-role">Personal Brand</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /panel-linkedin -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Zeltria_vision</div>
+  <div class="footer-copy">© 2026 Zeltria_vision Portfolio</div>
+</footer>
+
+<script>
+// ── TAB SWITCHING ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelector('.tab-nav-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+  setTimeout(triggerReveals, 100);
+}
+
+// ── SCROLL REVEAL ──
+function triggerReveals() {
+  const reveals = document.querySelectorAll('.tab-panel.active .reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => {
+    if (!el.classList.contains('visible')) observer.observe(el);
+    else el.classList.add('visible');
+  });
+}
+document.addEventListener('DOMContentLoaded', triggerReveals);
+window.addEventListener('scroll', triggerReveals, {passive:true});
+
+// ── COUNTER ANIMATION ──
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  const duration = 1800;
+  let current = 0;
+  const inc = target / (duration / 16);
+  const timer = setInterval(() => {
+    current = Math.min(current + inc, target);
+    el.textContent = Math.floor(current);
+    if (current >= target) { clearInterval(timer); el.textContent = target; }
+  }, 16);
+}
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { animateCounter(e.target); counterObs.unobserve(e.target); }
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.counter').forEach(el => counterObs.observe(el));
+
+// ── CINEMA VIDEO HOVER ──
+const cinemaSingle = document.getElementById('cinemaSingle');
+const cinemaVideo = document.getElementById('cinemaVideo');
+if (cinemaSingle && cinemaVideo) {
+  cinemaSingle.addEventListener('mouseenter', () => cinemaVideo.play());
+  cinemaSingle.addEventListener('mouseleave', () => { cinemaVideo.pause(); cinemaVideo.currentTime = 0; });
+}
+
+// ── NAV SCROLL EFFECT ──
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  nav.style.padding = window.scrollY > 50 ? '14px 5%' : '20px 5%';
+});
+
+// ── HERO PARALLAX ──
+window.addEventListener('scroll', () => {
+  const hero = document.getElementById('hero');
+  if (!hero) return;
+  const bg = hero.querySelector('.hero-bg');
+  const scroll = window.scrollY;
+  if (scroll < window.innerHeight) bg.style.transform = `translateY(${scroll * 0.3}px)`;
+}, {passive:true});
+</script>
+</body>
+</html>
