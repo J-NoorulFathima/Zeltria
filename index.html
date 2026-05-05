@@ -1316,26 +1316,33 @@ function switchTab(tab) {
 document.addEventListener('DOMContentLoaded', function() {
   triggerReveals();
 
-  // ── CINEMA FRAMES: click to play/pause any card ──
+  // ── CINEMA FRAMES: click to play/pause with sound ──
   document.querySelectorAll('.cinema-frame').forEach(function(frame) {
     var thumb = frame.querySelector('.cinema-frame-thumb');
     var video = frame.querySelector('video');
     if (!thumb || !video) return;
     thumb.addEventListener('click', function() {
       if (video.paused) {
-        // pause all other cinema videos first
+        // pause & re-mute all other cinema videos first
         document.querySelectorAll('.cinema-frame-thumb.playing').forEach(function(t) {
-          t.querySelector('video').pause();
+          var v = t.querySelector('video');
+          v.pause();
+          v.muted = true;
           t.classList.remove('playing');
         });
+        video.muted = false; // unmute on click — user wants to hear it
         video.play();
         thumb.classList.add('playing');
       } else {
         video.pause();
+        video.muted = true;
         thumb.classList.remove('playing');
       }
     });
-    video.addEventListener('ended', function() { thumb.classList.remove('playing'); });
+    video.addEventListener('ended', function() {
+      video.muted = true;
+      thumb.classList.remove('playing');
+    });
   });
 });
 
