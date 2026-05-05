@@ -302,12 +302,11 @@ section{padding:100px 5%}
 .process-steps{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:2px;margin-top:60px;position:relative;
-  border-radius:16px;overflow:hidden; /* FIX: moved border-radius to wrapper */
+  border-radius:16px;overflow:hidden;
 }
 .process-step{
   padding:40px 32px;background:var(--bg2);position:relative;transition:background 0.3s;
 }
-/* REMOVED individual first/last-child border-radius — wrapper handles it now */
 .process-step:hover{background:var(--bg3)}
 .step-num{
   font-family:var(--font-display);font-size:80px;font-weight:700;
@@ -520,17 +519,43 @@ section{padding:100px 5%}
 }
 .cinema-single-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;cursor:pointer}
 .cinema-single-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+/* ── FIX: always show overlay so play button is always visible/clickable ── */
 .cinema-single-hover{
-  position:absolute;inset:0;background:rgba(0,0,0,0.4);
+  position:absolute;inset:0;background:rgba(0,0,0,0.35);
   display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:opacity 0.3s;
+  transition:background 0.3s;
 }
-.cinema-single:hover .cinema-single-hover{opacity:1}
+/* when playing, dim the overlay but keep it present for pause */
+.cinema-single-thumb.playing .cinema-single-hover{
+  background:rgba(0,0,0,0);
+  opacity:0;
+}
+.cinema-single-thumb.playing:hover .cinema-single-hover{
+  background:rgba(0,0,0,0.3);
+  opacity:1;
+}
 .play-icon-lg{
   width:64px;height:64px;border-radius:50%;
   background:rgba(255,255,255,0.9);
   display:flex;align-items:center;justify-content:center;
+  transition:transform 0.2s,background 0.2s;
 }
+.cinema-single-hover:hover .play-icon-lg{
+  transform:scale(1.1);
+  background:#fff;
+}
+/* pause icon shown when playing */
+.pause-bars{
+  display:none;
+  gap:5px;align-items:center;justify-content:center;
+  width:22px;
+}
+.pause-bars span{
+  display:block;width:5px;height:20px;border-radius:3px;background:#111;
+}
+.cinema-single-thumb.playing .play-triangle{display:none}
+.cinema-single-thumb.playing .pause-bars{display:flex}
+
 .cinema-single-info{
   padding:24px 28px;
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
@@ -684,7 +709,6 @@ footer{
     <li><a href="#" onclick="switchTab('ai');return false;">AI Videos</a></li>
     <li><a href="#" onclick="switchTab('posters');return false;">Posters</a></li>
     <li><a href="#" onclick="switchTab('linkedin');return false;">LinkedIn</a></li>
-    <!-- FIX 3: nav Clients link — switches to linkedin tab first, then scrolls to testimonials -->
     <li><a href="#" onclick="switchTab('linkedin');setTimeout(function(){document.getElementById('testimonials').scrollIntoView({behavior:'smooth'})},350);return false;">Clients</a></li>
   </ul>
   <a href="https://wa.me/918825756068?text=Hi%20I%20want%20to%20hire%20you" class="nav-cta" target="_blank" rel="noopener">Hire Me</a>
@@ -796,19 +820,27 @@ footer{
   <section id="ai-videos-wide">
     <div class="section-label reveal">Cinematic AI Video</div>
     <h2 class="section-title reveal reveal-delay-1" style="text-align:center">Widescreen.<br>Cinematic. Engineered.</h2>
+
+    <!-- ── FIXED cinema player ── -->
     <div class="cinema-single reveal reveal-delay-2" id="cinemaSingle">
-      <div class="cinema-single-thumb">
-        <video id="cinemaVideo" src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4" muted loop></video>
-        <div class="cinema-single-hover">
+      <div class="cinema-single-thumb" id="cinemaThumb">
+        <video id="cinemaVideo"
+               src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4"
+               muted loop preload="metadata"></video>
+        <div class="cinema-single-hover" id="cinemaOverlay">
           <div class="play-icon-lg">
-            <div style="width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #111;margin-left:4px"></div>
+            <!-- play triangle -->
+            <div class="play-triangle" style="width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #111;margin-left:4px"></div>
+            <!-- pause bars (hidden until playing) -->
+            <div class="pause-bars"><span></span><span></span></div>
           </div>
         </div>
       </div>
       <div class="cinema-single-info">
         <div>
-          <div class="cinema-single-title">AI Brand Video</div>
-          <div class="cinema-single-meta">LinkedIn · High Retention Format · AI-Powered Production</div>
+          <!-- ── UPDATED caption ── -->
+          <div class="cinema-single-title">PocketFM Trailer</div>
+          <div class="cinema-single-meta">High Retention Format · AI-Powered Production</div>
         </div>
       </div>
     </div>
@@ -1247,8 +1279,7 @@ footer{
 </footer>
 
 <script>
-// ── REVEAL OBSERVER — initialized ONCE, not on every scroll ──
-// FIX 1: Single IntersectionObserver instance prevents memory leak and double-firing
+// ── REVEAL OBSERVER ──
 var revealObserver = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
     if (e.isIntersecting) {
@@ -1264,7 +1295,6 @@ function triggerReveals() {
 }
 
 // ── TAB SWITCHING ──
-// FIX 2: scroll to page top on tab switch instead of scrollIntoView mid-page
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
   document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
@@ -1274,12 +1304,33 @@ function switchTab(tab) {
   setTimeout(triggerReveals, 100);
 }
 
-// ── INIT on DOMContentLoaded ──
+// ── INIT ──
 document.addEventListener('DOMContentLoaded', function() {
   triggerReveals();
+
+  // ── FIXED cinema player: click to play/pause ──
+  var cinemaThumb = document.getElementById('cinemaThumb');
+  var cinemaVideo = document.getElementById('cinemaVideo');
+
+  if (cinemaThumb && cinemaVideo) {
+    cinemaThumb.addEventListener('click', function() {
+      if (cinemaVideo.paused) {
+        cinemaVideo.play();
+        cinemaThumb.classList.add('playing');
+      } else {
+        cinemaVideo.pause();
+        cinemaThumb.classList.remove('playing');
+      }
+    });
+
+    // reset state when video ends (loop is off scenario)
+    cinemaVideo.addEventListener('ended', function() {
+      cinemaThumb.classList.remove('playing');
+    });
+  }
 });
 
-// ── SCROLL: trigger reveals for elements entering viewport ──
+// ── SCROLL: trigger reveals ──
 window.addEventListener('scroll', triggerReveals, { passive: true });
 
 // ── COUNTER ANIMATION ──
@@ -1300,14 +1351,6 @@ var counterObs = new IntersectionObserver(function(entries) {
   });
 }, { threshold: 0.5 });
 document.querySelectorAll('.counter').forEach(function(el) { counterObs.observe(el); });
-
-// ── CINEMA VIDEO HOVER ──
-var cinemaSingle = document.getElementById('cinemaSingle');
-var cinemaVideo = document.getElementById('cinemaVideo');
-if (cinemaSingle && cinemaVideo) {
-  cinemaSingle.addEventListener('mouseenter', function() { cinemaVideo.play(); });
-  cinemaSingle.addEventListener('mouseleave', function() { cinemaVideo.pause(); cinemaVideo.currentTime = 0; });
-}
 
 // ── NAV SCROLL EFFECT ──
 window.addEventListener('scroll', function() {
