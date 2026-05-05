@@ -366,6 +366,67 @@ section{padding:100px 5%}
 }
 .poster-frame:hover::before{transform:scaleX(1)}
 
+/* ── POSTER LIGHTBOX ── */
+.poster-lightbox{
+  position:fixed;inset:0;z-index:999;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  opacity:0;visibility:hidden;
+  transition:opacity 0.35s cubic-bezier(0.4,0,0.2,1),
+              visibility 0.35s;
+}
+.poster-lightbox.open{
+  opacity:1;visibility:visible;
+}
+.poster-lb-backdrop{
+  position:absolute;inset:0;
+  background:rgba(5,5,7,0.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  cursor:pointer;
+}
+.poster-lb-inner{
+  position:relative;z-index:1;
+  max-width:min(480px, calc(100vw - 40px));
+  width:100%;
+  transform:scale(0.88) translateY(16px);
+  transition:transform 0.4s cubic-bezier(0.34,1.26,0.64,1);
+}
+.poster-lightbox.open .poster-lb-inner{
+  transform:scale(1) translateY(0);
+}
+.poster-lb-img-wrap{
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,0.8),
+             0 0 0 1px rgba(255,255,255,0.08),
+             0 0 80px rgba(139,92,246,0.12);
+  position:relative;
+}
+.poster-lb-img-wrap::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:3px;background:var(--accent-grad);z-index:2;
+}
+.poster-lb-img{
+  width:100%;
+  display:block;
+  border-radius:20px;
+}
+.poster-lb-close{
+  position:absolute;top:-48px;right:0;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  color:#fff;font-size:18px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:background 0.2s,transform 0.2s;
+  backdrop-filter:blur(10px);
+}
+.poster-lb-close:hover{background:rgba(255,255,255,0.16);transform:scale(1.1)}
+.poster-lb-label{
+  text-align:center;margin-top:16px;
+  font-size:13px;color:var(--text-sub);font-weight:300;letter-spacing:0.5px;
+}
+
 /* LinkedIn */
 #linkedin-port{background:var(--bg)}
 .linkedin-scroll{
@@ -525,19 +586,52 @@ section{padding:100px 5%}
 }
 .cinema-frame-thumb{position:relative;aspect-ratio:16/9;overflow:hidden}
 .cinema-frame-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ── CINEMA OVERLAY: always visible on touch, hover on desktop ── */
 .cinema-frame-overlay{
   position:absolute;inset:0;
   background:rgba(0,0,0,0.35);
   display:flex;align-items:center;justify-content:center;
   transition:background 0.3s,opacity 0.3s;
 }
-.cinema-frame-thumb.playing .cinema-frame-overlay{background:rgba(0,0,0,0);opacity:0}
-.cinema-frame-thumb.playing:hover .cinema-frame-overlay{background:rgba(0,0,0,0.3);opacity:1}
+/* Desktop hover-to-hide when playing */
+@media(hover:hover){
+  .cinema-frame-thumb.playing .cinema-frame-overlay{background:rgba(0,0,0,0);opacity:0}
+  .cinema-frame-thumb.playing:hover .cinema-frame-overlay{background:rgba(0,0,0,0.3);opacity:1}
+}
+/* Touch: always show overlay until actively playing */
+@media(hover:none){
+  .cinema-frame-overlay{
+    opacity:1 !important;
+    background:rgba(0,0,0,0.38) !important;
+  }
+  .cinema-frame-thumb.playing .cinema-frame-overlay{
+    background:rgba(0,0,0,0) !important;
+    opacity:0 !important;
+    transition:opacity 0.5s ease,background 0.5s ease;
+  }
+  /* Tap to reveal pause button while playing */
+  .cinema-frame-thumb.playing.touch-peek .cinema-frame-overlay{
+    background:rgba(0,0,0,0.3) !important;
+    opacity:1 !important;
+  }
+}
+
 .play-icon-lg{
   width:56px;height:56px;border-radius:50%;
   background:rgba(255,255,255,0.9);
   display:flex;align-items:center;justify-content:center;
   transition:transform 0.2s,background 0.2s;
+}
+/* Subtle pulse on mobile to signal tappability */
+@media(hover:none){
+  .cinema-frame-thumb:not(.playing) .play-icon-lg{
+    animation:playPulse 2.4s ease-in-out infinite;
+  }
+}
+@keyframes playPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0.35)}
+  50%{box-shadow:0 0 0 12px rgba(255,255,255,0)}
 }
 .cinema-frame-overlay:hover .play-icon-lg{transform:scale(1.1);background:#fff}
 .pause-bars{display:none;gap:5px;align-items:center;justify-content:center;width:22px}
@@ -687,6 +781,16 @@ footer{
   #cta{padding:100px 5%}
   footer{flex-direction:column;text-align:center}
   .tab-btn{min-width:120px;padding:16px 16px;font-size:13px}
+  /* Smaller cinema frames on mobile */
+  .cinema-frame{flex:0 0 300px}
+  /* Hint text on cinema frames */
+  .cinema-frame-info::after{
+    content:'Tap to play';
+    display:block;font-size:11px;color:var(--text-muted);margin-top:4px;letter-spacing:0.3px;
+  }
+  .cinema-frame-thumb.playing ~ .cinema-frame-info::after{
+    content:'Tap to pause';
+  }
 }
 
 /* SCROLLBAR */
@@ -696,6 +800,18 @@ footer{
 </style>
 </head>
 <body>
+
+<!-- POSTER LIGHTBOX (global, outside panels) -->
+<div class="poster-lightbox" id="posterLightbox" role="dialog" aria-modal="true" aria-label="Poster preview">
+  <div class="poster-lb-backdrop" id="posterLbBackdrop"></div>
+  <div class="poster-lb-inner">
+    <button class="poster-lb-close" id="posterLbClose" aria-label="Close preview">✕</button>
+    <div class="poster-lb-img-wrap">
+      <img class="poster-lb-img" id="posterLbImg" src="" alt="Poster preview">
+    </div>
+    <div class="poster-lb-label" id="posterLbLabel"></div>
+  </div>
+</div>
 
 <!-- NAV -->
 <nav id="navbar">
@@ -834,10 +950,10 @@ footer{
         </div>
       </div>
 
-      <!-- Card 2 — placeholder slot (add more videos here) -->
+      <!-- Card 2 -->
       <div class="cinema-frame">
         <div class="cinema-frame-thumb">
-          <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4" autoplay muted loop preload="metadata" playsinline></video>
+          <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4" muted loop preload="metadata" playsinline></video>
           <div class="cinema-frame-overlay">
             <div class="play-icon-lg">
               <div class="play-triangle" style="width:0;height:0;border-style:solid;border-width:9px 0 9px 16px;border-color:transparent transparent transparent #111;margin-left:3px"></div>
@@ -975,40 +1091,40 @@ footer{
     <div class="section-label reveal">Poster Portfolio</div>
     <h2 class="section-title reveal reveal-delay-1">Visual systems<br>that stop the feed.</h2>
     <div class="posters-scroll reveal reveal-delay-2">
-      <div class="poster-frame">
-        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/10ed987aa23f9ebea3afc817708e24c6e8a25a2b/red%20kordi.png" alt="Poster 1" loading="lazy">
+      <div class="poster-frame" data-label="Brand Poster">
+        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/10ed987aa23f9ebea3afc817708e24c6e8a25a2b/red%20kordi.png" alt="Brand Poster" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Brand Poster</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img2.png" alt="Poster 2" loading="lazy">
+      <div class="poster-frame" data-label="Content Poster">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img2.png" alt="Content Poster" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Content Poster</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/1c05545474ca566df39ac896cbd88a73ca8ac9e3/blue%20linked.jpg" alt="Poster 3" loading="lazy">
+      <div class="poster-frame" data-label="Marketing Visual">
+        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/1c05545474ca566df39ac896cbd88a73ca8ac9e3/blue%20linked.jpg" alt="Marketing Visual" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Marketing Visual</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img4.png" alt="Poster 4" loading="lazy">
+      <div class="poster-frame" data-label="Social Creative">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img4.png" alt="Social Creative" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Social Creative</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img5.png" alt="Poster 5" loading="lazy">
+      <div class="poster-frame" data-label="Brand Visual">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img5.png" alt="Brand Visual" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Brand Visual</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img6.png" alt="Poster 6" loading="lazy">
+      <div class="poster-frame" data-label="Campaign Poster">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img6.png" alt="Campaign Poster" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Campaign Poster</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/35c466047163b530490e912c03c28be9867f7b1d/reputation.jpg" alt="Poster 7" loading="lazy">
+      <div class="poster-frame" data-label="Design Work">
+        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/35c466047163b530490e912c03c28be9867f7b1d/reputation.jpg" alt="Design Work" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Design Work</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img8.png" alt="Poster 8" loading="lazy">
+      <div class="poster-frame" data-label="Visual Content">
+        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Img8.png" alt="Visual Content" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Visual Content</span></div>
       </div>
-      <div class="poster-frame">
-        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/64a83ae6e0af5a4479799c186d6a71c812d64139/green%20kordi.png" alt="Poster 9" loading="lazy">
+      <div class="poster-frame" data-label="Creative Poster">
+        <img src="https://github.com/J-NoorulFathima/Zeltria/raw/64a83ae6e0af5a4479799c186d6a71c812d64139/green%20kordi.png" alt="Creative Poster" loading="lazy">
         <div class="poster-frame-overlay"><span class="poster-frame-label">Creative Poster</span></div>
       </div>
     </div>
@@ -1312,37 +1428,122 @@ function switchTab(tab) {
   setTimeout(triggerReveals, 100);
 }
 
-// ── INIT ──
+// ── DETECT TOUCH DEVICE ──
+var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+// ── CINEMA FRAMES: play/pause with sound ──
 document.addEventListener('DOMContentLoaded', function() {
   triggerReveals();
 
-  // ── CINEMA FRAMES: click to play/pause with sound ──
   document.querySelectorAll('.cinema-frame').forEach(function(frame) {
     var thumb = frame.querySelector('.cinema-frame-thumb');
     var video = frame.querySelector('video');
     if (!thumb || !video) return;
-    thumb.addEventListener('click', function() {
+
+    function togglePlay() {
       if (video.paused) {
-        // pause & re-mute all other cinema videos first
+        // Pause & mute all other cinema videos
         document.querySelectorAll('.cinema-frame-thumb.playing').forEach(function(t) {
           var v = t.querySelector('video');
           v.pause();
           v.muted = true;
           t.classList.remove('playing');
+          t.classList.remove('touch-peek');
         });
-        video.muted = false; // unmute on click — user wants to hear it
+        video.muted = false;
         video.play();
         thumb.classList.add('playing');
       } else {
         video.pause();
         video.muted = true;
         thumb.classList.remove('playing');
+        thumb.classList.remove('touch-peek');
       }
-    });
+    }
+
+    // On touch: single tap plays/pauses; while playing, tap briefly shows controls
+    if (isTouch) {
+      thumb.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        if (thumb.classList.contains('playing')) {
+          // If already playing, first tap shows peek controls, second tap pauses
+          if (thumb.classList.contains('touch-peek')) {
+            togglePlay();
+          } else {
+            thumb.classList.add('touch-peek');
+            setTimeout(function() {
+              thumb.classList.remove('touch-peek');
+            }, 1800);
+          }
+        } else {
+          togglePlay();
+        }
+      });
+    } else {
+      thumb.addEventListener('click', togglePlay);
+    }
+
     video.addEventListener('ended', function() {
       video.muted = true;
       thumb.classList.remove('playing');
+      thumb.classList.remove('touch-peek');
     });
+  });
+
+  // ── POSTER LIGHTBOX ──
+  var lightbox   = document.getElementById('posterLightbox');
+  var lbImg      = document.getElementById('posterLbImg');
+  var lbLabel    = document.getElementById('posterLbLabel');
+  var lbClose    = document.getElementById('posterLbClose');
+  var lbBackdrop = document.getElementById('posterLbBackdrop');
+
+  function openLightbox(src, alt, label) {
+    lbImg.src = src;
+    lbImg.alt = alt || '';
+    lbLabel.textContent = label || '';
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    lbClose.focus();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+    // Clear src after transition to free memory
+    setTimeout(function() {
+      if (!lightbox.classList.contains('open')) lbImg.src = '';
+    }, 400);
+  }
+
+  // Attach click to each poster frame
+  document.querySelectorAll('.poster-frame').forEach(function(frame) {
+    frame.addEventListener('click', function() {
+      var img   = frame.querySelector('img');
+      var label = frame.dataset.label || frame.querySelector('.poster-frame-label')?.textContent || '';
+      if (img) openLightbox(img.src, img.alt, label);
+    });
+    // Keyboard accessibility
+    frame.setAttribute('tabindex', '0');
+    frame.setAttribute('role', 'button');
+    frame.setAttribute('aria-label', 'Preview ' + (frame.dataset.label || 'poster'));
+    frame.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        frame.click();
+      }
+    });
+  });
+
+  lbClose.addEventListener('click', closeLightbox);
+  lbBackdrop.addEventListener('click', closeLightbox);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+  });
+
+  // Prevent click inside inner from closing
+  document.querySelector('.poster-lb-inner').addEventListener('click', function(e) {
+    e.stopPropagation();
   });
 });
 
