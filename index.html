@@ -594,12 +594,10 @@ section{padding:100px 5%}
   display:flex;align-items:center;justify-content:center;
   transition:background 0.3s,opacity 0.3s;
 }
-/* Desktop hover-to-hide when playing */
 @media(hover:hover){
   .cinema-frame-thumb.playing .cinema-frame-overlay{background:rgba(0,0,0,0);opacity:0}
   .cinema-frame-thumb.playing:hover .cinema-frame-overlay{background:rgba(0,0,0,0.3);opacity:1}
 }
-/* Touch: always show overlay until actively playing */
 @media(hover:none){
   .cinema-frame-overlay{
     opacity:1 !important;
@@ -610,7 +608,6 @@ section{padding:100px 5%}
     opacity:0 !important;
     transition:opacity 0.5s ease,background 0.5s ease;
   }
-  /* Tap to reveal pause button while playing */
   .cinema-frame-thumb.playing.touch-peek .cinema-frame-overlay{
     background:rgba(0,0,0,0.3) !important;
     opacity:1 !important;
@@ -623,7 +620,6 @@ section{padding:100px 5%}
   display:flex;align-items:center;justify-content:center;
   transition:transform 0.2s,background 0.2s;
 }
-/* Subtle pulse on mobile to signal tappability */
 @media(hover:none){
   .cinema-frame-thumb:not(.playing) .play-icon-lg{
     animation:playPulse 2.4s ease-in-out infinite;
@@ -781,9 +777,7 @@ footer{
   #cta{padding:100px 5%}
   footer{flex-direction:column;text-align:center}
   .tab-btn{min-width:120px;padding:16px 16px;font-size:13px}
-  /* Smaller cinema frames on mobile */
   .cinema-frame{flex:0 0 300px}
-  /* Hint text on cinema frames */
   .cinema-frame-info::after{
     content:'Tap to play';
     display:block;font-size:11px;color:var(--text-muted);margin-top:4px;letter-spacing:0.3px;
@@ -797,9 +791,123 @@ footer{
 ::-webkit-scrollbar{height:4px;width:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:4px}
+
+/* ─────────────────────────────────────
+   PiP BUTTON OVERLAY
+   ───────────────────────────────────── */
+.pip-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* Hidden by default on desktop — shown on hover */
+  opacity: 0;
+  transition: opacity 0.22s, transform 0.18s, background 0.18s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+/* Always visible on touch (phone / tablet) */
+@media (hover: none) {
+  .pip-btn { opacity: 1 !important; }
+}
+/* Hover-reveal on desktop / laptop */
+.phone-frame:hover .pip-btn,
+.edit-phone:hover .pip-btn {
+  opacity: 1;
+}
+.pip-btn:hover  { background: rgba(0,0,0,0.78); transform: scale(1.1);  }
+.pip-btn:active { transform: scale(0.93); }
+.pip-btn svg    { width: 18px; height: 18px; fill: #fff; pointer-events: none; }
+/* Hidden when PiP is not supported in this browser */
+.pip-btn.pip-unsupported { display: none !important; }
+
+/* ─────────────────────────────────────
+   BACK-TO-TAB FLOATING BANNER
+   ───────────────────────────────────── */
+#pip-back-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  /* Off-screen by default */
+  transform: translateX(-50%) translateY(100px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-radius: 100px;
+  background: rgba(13,13,16,0.97);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 16px 56px rgba(0,0,0,0.65),
+              0 0 0 1px rgba(59,130,246,0.22);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  transition: transform 0.42s cubic-bezier(0.34,1.26,0.64,1),
+              opacity 0.35s;
+  opacity: 0;
+  pointer-events: none;
+}
+#pip-back-banner.pip-visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.pip-back-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3B82F6;
+  animation: pulse 1.6s infinite;
+  flex-shrink: 0;
+}
+#pip-back-label {
+  font-size: 13px;
+  color: var(--text-sub);
+  font-weight: 300;
+}
+.pip-back-btn {
+  padding: 7px 18px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  letter-spacing: 0.2px;
+  transition: opacity 0.2s, transform 0.18s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.pip-back-btn:hover  { opacity: 0.88; transform: scale(1.04); }
+.pip-back-btn:active { transform: scale(0.96); }
 </style>
 </head>
 <body>
+
+<!-- PiP Back-to-Tab Banner (global, always in DOM) -->
+<div id="pip-back-banner" role="status" aria-live="polite">
+  <span class="pip-back-dot"></span>
+  <span id="pip-back-label">Playing in Picture-in-Picture</span>
+  <button class="pip-back-btn" id="pip-back-btn">Back to tab</button>
+</div>
 
 <!-- POSTER LIGHTBOX (global, outside panels) -->
 <div class="poster-lightbox" id="posterLightbox" role="dialog" aria-modal="true" aria-label="Poster preview">
@@ -883,47 +991,68 @@ footer{
     <div class="vertical-label">Built for Shorts, Reels &amp; Attention Economy</div>
     <div class="section-label reveal">AI Video Projects</div>
     <h2 class="section-title reveal reveal-delay-1">Vertical content<br>that dominates feeds.</h2>
-    <div class="videos-scroll reveal reveal-delay-2">                          
-      <div class="phone-frame">               
-        <video src="https://raw.githubusercontent.com/J-NoorulFathima/Zeltria/main/Buff%20song.mp4" autoplay muted loop playsinline></video>
+    <div class="videos-scroll reveal reveal-delay-2">
+
+      <div class="phone-frame">
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/Zeltria/main/Buff%20song.mp4" autoplay muted loop playsinline disablepictureinpicture="false"></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Living%20world.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/AI%20Influence.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Patriot.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/News.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Buff%20competition.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Kordi.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Ethnic%20pot.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Buff%20ramzan.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Zel%20ramzan.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
     </div>
   </section>
 
@@ -979,31 +1108,42 @@ footer{
       <span>Cinematic storytelling</span> that makes people watch twice.
     </p>
     <div class="edit-scroll reveal reveal-delay-3">
+
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%201.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 01 · Retention-optimized</div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%202.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 02 · Cinematic pacing</div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%203.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 03 · Hook-driven cuts</div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%204.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 04 · Brand storytelling</div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%205.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 05 · Scroll-stop format</div>
+        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
+
     </div>
   </section>
 
@@ -1442,7 +1582,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function togglePlay() {
       if (video.paused) {
-        // Pause & mute all other cinema videos
         document.querySelectorAll('.cinema-frame-thumb.playing').forEach(function(t) {
           var v = t.querySelector('video');
           v.pause();
@@ -1461,12 +1600,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-    // On touch: single tap plays/pauses; while playing, tap briefly shows controls
     if (isTouch) {
       thumb.addEventListener('touchend', function(e) {
         e.preventDefault();
         if (thumb.classList.contains('playing')) {
-          // If already playing, first tap shows peek controls, second tap pauses
           if (thumb.classList.contains('touch-peek')) {
             togglePlay();
           } else {
@@ -1509,20 +1646,17 @@ document.addEventListener('DOMContentLoaded', function() {
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
-    // Clear src after transition to free memory
     setTimeout(function() {
       if (!lightbox.classList.contains('open')) lbImg.src = '';
     }, 400);
   }
 
-  // Attach click to each poster frame
   document.querySelectorAll('.poster-frame').forEach(function(frame) {
     frame.addEventListener('click', function() {
       var img   = frame.querySelector('img');
-      var label = frame.dataset.label || frame.querySelector('.poster-frame-label')?.textContent || '';
+      var label = frame.dataset.label || (frame.querySelector('.poster-frame-label') ? frame.querySelector('.poster-frame-label').textContent : '') || '';
       if (img) openLightbox(img.src, img.alt, label);
     });
-    // Keyboard accessibility
     frame.setAttribute('tabindex', '0');
     frame.setAttribute('role', 'button');
     frame.setAttribute('aria-label', 'Preview ' + (frame.dataset.label || 'poster'));
@@ -1541,7 +1675,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
   });
 
-  // Prevent click inside inner from closing
   document.querySelector('.poster-lb-inner').addEventListener('click', function(e) {
     e.stopPropagation();
   });
@@ -1583,6 +1716,141 @@ window.addEventListener('scroll', function() {
   var scroll = window.scrollY;
   if (scroll < window.innerHeight) bg.style.transform = 'translateY(' + (scroll * 0.3) + 'px)';
 }, { passive: true });
+
+// ═══════════════════════════════════════════════════════
+// PICTURE-IN-PICTURE  — phone-frame & edit-phone videos
+// Works on: Android Chrome, Samsung Browser, Chrome desktop,
+//           Edge, Firefox, Safari desktop, Safari iOS (WebKit PiP)
+// ═══════════════════════════════════════════════════════
+(function() {
+  'use strict';
+
+  var pipBanner    = document.getElementById('pip-back-banner');
+  var pipBackBtn   = document.getElementById('pip-back-btn');
+  var activePipVid = null;
+
+  // ── Banner helpers ──
+  function showBanner() {
+    if (pipBanner) pipBanner.classList.add('pip-visible');
+  }
+  function hideBanner() {
+    if (pipBanner) pipBanner.classList.remove('pip-visible');
+    activePipVid = null;
+  }
+
+  // ── Feature detection ──
+  function standardPipOk() {
+    return !!document.pictureInPictureEnabled;
+  }
+  function webkitPipOk(video) {
+    return typeof video.webkitSupportsPresentationMode === 'function' &&
+           video.webkitSupportsPresentationMode('picture-in-picture');
+  }
+
+  // ── Launch / toggle PiP for a given video ──
+  function launchPip(video) {
+    // — Standard API (Chrome, Edge, Firefox, Android Chrome) —
+    if (standardPipOk()) {
+      if (document.pictureInPictureElement === video) {
+        // Already in PiP → exit
+        document.exitPictureInPicture().catch(function() {});
+        return;
+      }
+      // Ensure the video element is actually playing (required on some mobile browsers)
+      var p = video.play();
+      function requestPip() {
+        video.requestPictureInPicture().then(function() {
+          activePipVid = video;
+          showBanner();
+        }).catch(function(err) {
+          console.warn('[PiP] requestPictureInPicture failed:', err && err.message || err);
+        });
+      }
+      if (p && typeof p.then === 'function') {
+        p.then(requestPip).catch(requestPip); // try PiP even if play() rejects
+      } else {
+        requestPip();
+      }
+      return;
+    }
+
+    // — WebKit API (Safari desktop + iOS Safari) —
+    if (webkitPipOk(video)) {
+      if (video.webkitPresentationMode === 'picture-in-picture') {
+        video.webkitSetPresentationMode('inline');
+        hideBanner();
+      } else {
+        video.play().catch(function() {});
+        video.webkitSetPresentationMode('picture-in-picture');
+        activePipVid = video;
+        showBanner();
+      }
+    }
+  }
+
+  // ── Attach PiP button to one container ──
+  function attachPip(container) {
+    var video = container.querySelector('video');
+    var btn   = container.querySelector('.pip-btn');
+    if (!video || !btn) return;
+
+    // Visibility check once metadata is available
+    function checkSupport() {
+      var ok = standardPipOk() ||
+               (typeof video.webkitSupportsPresentationMode === 'function' &&
+                video.webkitSupportsPresentationMode('picture-in-picture'));
+      if (!ok) btn.classList.add('pip-unsupported');
+    }
+    if (video.readyState >= 1) {
+      checkSupport();
+    } else {
+      video.addEventListener('loadedmetadata', checkSupport, { once: true });
+    }
+
+    // Prevent click from bubbling to parent (cinema frame toggle etc.)
+    function activate(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      launchPip(video);
+    }
+    btn.addEventListener('click',    activate);
+    btn.addEventListener('touchend', activate);
+  }
+
+  // ── Back-to-tab button ──
+  if (pipBackBtn) {
+    pipBackBtn.addEventListener('click', function() {
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture().then(hideBanner).catch(hideBanner);
+      } else if (activePipVid &&
+                 typeof activePipVid.webkitPresentationMode !== 'undefined' &&
+                 activePipVid.webkitPresentationMode === 'picture-in-picture') {
+        activePipVid.webkitSetPresentationMode('inline');
+        hideBanner();
+      } else {
+        hideBanner();
+      }
+    });
+  }
+
+  // ── Global PiP events (standard API) ──
+  document.addEventListener('enterpictureinpicture', function(e) {
+    activePipVid = e.target;
+    showBanner();
+  });
+  document.addEventListener('leavepictureinpicture', hideBanner);
+
+  // ── Init: wire up all existing containers ──
+  function init() {
+    document.querySelectorAll('.phone-frame, .edit-phone').forEach(attachPip);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 </script>
 </body>
 </html>
