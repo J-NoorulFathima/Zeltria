@@ -507,61 +507,56 @@ section{padding:100px 5%}
   pointer-events:none;
 }
 
-/* AI Videos 16:9 */
+/* AI Videos 16:9 — scrollable cinema frames */
 #ai-videos-wide{background:var(--bg)}
-.cinema-single{
-  margin-top:56px;border-radius:20px;overflow:hidden;background:var(--bg3);
-  border:1px solid var(--glass-border);transition:box-shadow 0.3s;
-  max-width:900px;margin-left:auto;margin-right:auto;
+.cinema-scroll{
+  display:flex;gap:16px;overflow-x:auto;padding:16px 0 20px;
+  scrollbar-width:thin;scrollbar-color:var(--glass-border) transparent;
 }
-.cinema-single:hover{
-  box-shadow:0 30px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(59,130,246,0.15);
+.cinema-frame{
+  flex:0 0 520px;border-radius:20px;overflow:hidden;
+  background:var(--bg3);border:2px solid var(--glass-border);
+  position:relative;transition:transform 0.3s,box-shadow 0.3s;
+  cursor:pointer;
 }
-.cinema-single-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;cursor:pointer}
-.cinema-single-thumb video{width:100%;height:100%;object-fit:cover;display:block}
-/* ── FIX: always show overlay so play button is always visible/clickable ── */
-.cinema-single-hover{
-  position:absolute;inset:0;background:rgba(0,0,0,0.35);
+.cinema-frame:hover{
+  transform:scale(1.02) translateY(-4px);
+  box-shadow:0 24px 64px rgba(0,0,0,0.65),0 0 0 1px rgba(59,130,246,0.2);
+}
+.cinema-frame-thumb{position:relative;aspect-ratio:16/9;overflow:hidden}
+.cinema-frame-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.cinema-frame-overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0.35);
   display:flex;align-items:center;justify-content:center;
-  transition:background 0.3s;
+  transition:background 0.3s,opacity 0.3s;
 }
-/* when playing, dim the overlay but keep it present for pause */
-.cinema-single-thumb.playing .cinema-single-hover{
-  background:rgba(0,0,0,0);
-  opacity:0;
-}
-.cinema-single-thumb.playing:hover .cinema-single-hover{
-  background:rgba(0,0,0,0.3);
-  opacity:1;
-}
+.cinema-frame-thumb.playing .cinema-frame-overlay{background:rgba(0,0,0,0);opacity:0}
+.cinema-frame-thumb.playing:hover .cinema-frame-overlay{background:rgba(0,0,0,0.3);opacity:1}
 .play-icon-lg{
-  width:64px;height:64px;border-radius:50%;
+  width:56px;height:56px;border-radius:50%;
   background:rgba(255,255,255,0.9);
   display:flex;align-items:center;justify-content:center;
   transition:transform 0.2s,background 0.2s;
 }
-.cinema-single-hover:hover .play-icon-lg{
-  transform:scale(1.1);
-  background:#fff;
+.cinema-frame-overlay:hover .play-icon-lg{transform:scale(1.1);background:#fff}
+.pause-bars{display:none;gap:5px;align-items:center;justify-content:center;width:22px}
+.pause-bars span{display:block;width:5px;height:20px;border-radius:3px;background:#111}
+.cinema-frame-thumb.playing .play-triangle{display:none}
+.cinema-frame-thumb.playing .pause-bars{display:flex}
+.cinema-frame::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:3px;background:var(--accent-grad);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 0.35s ease;z-index:2;
 }
-/* pause icon shown when playing */
-.pause-bars{
-  display:none;
-  gap:5px;align-items:center;justify-content:center;
-  width:22px;
+.cinema-frame:hover::before{transform:scaleX(1)}
+.cinema-frame-info{
+  padding:16px 20px;
+  border-top:1px solid var(--glass-border);
 }
-.pause-bars span{
-  display:block;width:5px;height:20px;border-radius:3px;background:#111;
-}
-.cinema-single-thumb.playing .play-triangle{display:none}
-.cinema-single-thumb.playing .pause-bars{display:flex}
-
-.cinema-single-info{
-  padding:24px 28px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
-}
-.cinema-single-title{font-family:var(--font-display);font-size:20px;font-weight:700;font-style:italic}
-.cinema-single-meta{font-size:13px;color:var(--text-muted)}
+.cinema-frame-title{font-family:var(--font-display);font-size:18px;font-weight:700;font-style:italic}
+.cinema-frame-meta{font-size:12px;color:var(--text-muted);margin-top:4px}
 
 /* Video Editing */
 #video-edit{background:var(--bg2)}
@@ -816,33 +811,46 @@ footer{
     </div>
   </section>
 
-  <!-- AI VIDEOS 16:9 -->
+  <!-- AI VIDEOS 16:9 scrollable -->
   <section id="ai-videos-wide">
     <div class="section-label reveal">Cinematic AI Video</div>
-    <h2 class="section-title reveal reveal-delay-1" style="text-align:center">Widescreen.<br>Cinematic. Engineered.</h2>
+    <h2 class="section-title reveal reveal-delay-1">Widescreen.<br>Cinematic. Engineered.</h2>
+    <div class="cinema-scroll reveal reveal-delay-2">
 
-    <!-- ── FIXED cinema player ── -->
-    <div class="cinema-single reveal reveal-delay-2" id="cinemaSingle">
-      <div class="cinema-single-thumb" id="cinemaThumb">
-        <video id="cinemaVideo"
-               src="https://github.com/J-NoorulFathima/Zeltria/raw/1997c6b7497bfa5053c9cb6b47ef8df679c99b7f/Flameborne.mp4"
-               muted loop preload="metadata"></video>
-        <div class="cinema-single-hover" id="cinemaOverlay">
-          <div class="play-icon-lg">
-            <!-- play triangle -->
-            <div class="play-triangle" style="width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #111;margin-left:4px"></div>
-            <!-- pause bars (hidden until playing) -->
-            <div class="pause-bars"><span></span><span></span></div>
+      <!-- Card 1 — Flameborne -->
+      <div class="cinema-frame">
+        <div class="cinema-frame-thumb">
+          <video src="https://github.com/J-NoorulFathima/Zeltria/raw/1997c6b7497bfa5053c9cb6b47ef8df679c99b7f/Flameborne.mp4" muted loop preload="metadata" playsinline></video>
+          <div class="cinema-frame-overlay">
+            <div class="play-icon-lg">
+              <div class="play-triangle" style="width:0;height:0;border-style:solid;border-width:9px 0 9px 16px;border-color:transparent transparent transparent #111;margin-left:3px"></div>
+              <div class="pause-bars"><span></span><span></span></div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="cinema-single-info">
-        <div>
-          <!-- ── UPDATED caption ── -->
-          <div class="cinema-single-title">PocketFM Trailer</div>
-          <div class="cinema-single-meta">High Retention Format · AI-Powered Production</div>
+        <div class="cinema-frame-info">
+          <div class="cinema-frame-title">PocketFM Trailer</div>
+          <div class="cinema-frame-meta">High Retention Format · AI-Powered Production</div>
         </div>
       </div>
+
+      <!-- Card 2 — placeholder slot (add more videos here) -->
+      <div class="cinema-frame">
+        <div class="cinema-frame-thumb">
+          <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4" autoplay muted loop preload="metadata" playsinline></video>
+          <div class="cinema-frame-overlay">
+            <div class="play-icon-lg">
+              <div class="play-triangle" style="width:0;height:0;border-style:solid;border-width:9px 0 9px 16px;border-color:transparent transparent transparent #111;margin-left:3px"></div>
+              <div class="pause-bars"><span></span><span></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="cinema-frame-info">
+          <div class="cinema-frame-title">AI Brand Video</div>
+          <div class="cinema-frame-meta">High Retention Format · AI-Powered Production</div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1308,26 +1316,27 @@ function switchTab(tab) {
 document.addEventListener('DOMContentLoaded', function() {
   triggerReveals();
 
-  // ── FIXED cinema player: click to play/pause ──
-  var cinemaThumb = document.getElementById('cinemaThumb');
-  var cinemaVideo = document.getElementById('cinemaVideo');
-
-  if (cinemaThumb && cinemaVideo) {
-    cinemaThumb.addEventListener('click', function() {
-      if (cinemaVideo.paused) {
-        cinemaVideo.play();
-        cinemaThumb.classList.add('playing');
+  // ── CINEMA FRAMES: click to play/pause any card ──
+  document.querySelectorAll('.cinema-frame').forEach(function(frame) {
+    var thumb = frame.querySelector('.cinema-frame-thumb');
+    var video = frame.querySelector('video');
+    if (!thumb || !video) return;
+    thumb.addEventListener('click', function() {
+      if (video.paused) {
+        // pause all other cinema videos first
+        document.querySelectorAll('.cinema-frame-thumb.playing').forEach(function(t) {
+          t.querySelector('video').pause();
+          t.classList.remove('playing');
+        });
+        video.play();
+        thumb.classList.add('playing');
       } else {
-        cinemaVideo.pause();
-        cinemaThumb.classList.remove('playing');
+        video.pause();
+        thumb.classList.remove('playing');
       }
     });
-
-    // reset state when video ends (loop is off scenario)
-    cinemaVideo.addEventListener('ended', function() {
-      cinemaThumb.classList.remove('playing');
-    });
-  }
+    video.addEventListener('ended', function() { thumb.classList.remove('playing'); });
+  });
 });
 
 // ── SCROLL: trigger reveals ──
