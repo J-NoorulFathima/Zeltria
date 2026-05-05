@@ -587,7 +587,7 @@ section{padding:100px 5%}
 .cinema-frame-thumb{position:relative;aspect-ratio:16/9;overflow:hidden}
 .cinema-frame-thumb video{width:100%;height:100%;object-fit:cover;display:block}
 
-/* ── CINEMA OVERLAY: always visible on touch, hover on desktop ── */
+/* ── CINEMA OVERLAY ── */
 .cinema-frame-overlay{
   position:absolute;inset:0;
   background:rgba(0,0,0,0.35);
@@ -793,45 +793,88 @@ footer{
 ::-webkit-scrollbar-thumb{background:var(--glass-border);border-radius:4px}
 
 /* ─────────────────────────────────────
-   PiP BUTTON OVERLAY
+   PiP BUTTON — ALWAYS VISIBLE ON ALL DEVICES
    ───────────────────────────────────── */
 .pip-btn {
   position: absolute;
   bottom: 12px;
   right: 12px;
   z-index: 10;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.18);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.65);
+  border: 1px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  /* Hidden by default on desktop — shown on hover */
-  opacity: 0;
+  /* Always visible on ALL devices — no opacity:0 default */
+  opacity: 1;
   transition: opacity 0.22s, transform 0.18s, background 0.18s;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   padding: 0;
+  /* Subtle pulse on mobile to hint tappability */
 }
-/* Always visible on touch (phone / tablet) */
-@media (hover: none) {
-  .pip-btn { opacity: 1 !important; }
+
+/* On desktop with hover capability: slightly dim when not hovering the card */
+@media (hover: hover) {
+  .phone-frame .pip-btn,
+  .edit-phone .pip-btn {
+    opacity: 0.45;
+  }
+  .phone-frame:hover .pip-btn,
+  .edit-phone:hover .pip-btn {
+    opacity: 1;
+  }
 }
-/* Hover-reveal on desktop / laptop */
-.phone-frame:hover .pip-btn,
-.edit-phone:hover .pip-btn {
-  opacity: 1;
-}
-.pip-btn:hover  { background: rgba(0,0,0,0.78); transform: scale(1.1);  }
+
+.pip-btn:hover  { background: rgba(0,0,0,0.85); transform: scale(1.1); }
 .pip-btn:active { transform: scale(0.93); }
-.pip-btn svg    { width: 18px; height: 18px; fill: #fff; pointer-events: none; }
-/* Hidden when PiP is not supported in this browser */
+.pip-btn svg    { width: 20px; height: 20px; fill: #fff; pointer-events: none; }
+
+/* Hidden when PiP is not supported */
 .pip-btn.pip-unsupported { display: none !important; }
+
+/* Touch hint: subtle glow on mobile */
+@media (hover: none) {
+  .pip-btn {
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.35), 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .pip-btn:active {
+    background: rgba(59,130,246,0.4);
+    transform: scale(0.93);
+  }
+}
+
+/* ── PiP tooltip label on mobile ── */
+.pip-label {
+  position: absolute;
+  bottom: 60px;
+  right: 12px;
+  z-index: 11;
+  background: rgba(0,0,0,0.82);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s, transform 0.2s;
+  letter-spacing: 0.3px;
+}
+.pip-btn:focus + .pip-label,
+.pip-btn:active + .pip-label {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* ─────────────────────────────────────
    BACK-TO-TAB FLOATING BANNER
@@ -840,7 +883,6 @@ footer{
   position: fixed;
   bottom: 24px;
   left: 50%;
-  /* Off-screen by default */
   transform: translateX(-50%) translateY(100px);
   z-index: 99999;
   display: flex;
@@ -898,18 +940,35 @@ footer{
 }
 .pip-back-btn:hover  { opacity: 0.88; transform: scale(1.04); }
 .pip-back-btn:active { transform: scale(0.96); }
+
+/* Mobile banner adjustments */
+@media (max-width: 480px) {
+  #pip-back-banner {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    transform: translateY(100px);
+    border-radius: 16px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    white-space: normal;
+  }
+  #pip-back-banner.pip-visible {
+    transform: translateY(0);
+  }
+}
 </style>
 </head>
 <body>
 
-<!-- PiP Back-to-Tab Banner (global, always in DOM) -->
+<!-- PiP Back-to-Tab Banner -->
 <div id="pip-back-banner" role="status" aria-live="polite">
   <span class="pip-back-dot"></span>
   <span id="pip-back-label">Playing in Picture-in-Picture</span>
   <button class="pip-back-btn" id="pip-back-btn">Back to tab</button>
 </div>
 
-<!-- POSTER LIGHTBOX (global, outside panels) -->
+<!-- POSTER LIGHTBOX -->
 <div class="poster-lightbox" id="posterLightbox" role="dialog" aria-modal="true" aria-label="Poster preview">
   <div class="poster-lb-backdrop" id="posterLbBackdrop"></div>
   <div class="poster-lb-inner">
@@ -975,7 +1034,6 @@ footer{
 <!-- ═══════════════════════════════════════════ -->
 <div class="tab-panel active" id="panel-ai">
 
-  <!-- Part Banner -->
   <div class="part-banner">
     <div class="part-banner-inner">
       <div>
@@ -994,75 +1052,74 @@ footer{
     <div class="videos-scroll reveal reveal-delay-2">
 
       <div class="phone-frame">
-        <video src="https://raw.githubusercontent.com/J-NoorulFathima/Zeltria/main/Buff%20song.mp4" autoplay muted loop playsinline disablepictureinpicture="false"></video>
+        <video src="https://raw.githubusercontent.com/J-NoorulFathima/Zeltria/main/Buff%20song.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Living%20world.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/AI%20Influence.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Patriot.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/News.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Buff%20competition.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Kordi.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Ethnic%20pot.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Buff%20ramzan.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="phone-frame">
         <video src="https://github.com/J-NoorulFathima/Zeltria/raw/5a018a9f7fc814b94d61801b76223578ae46ec5f/Zel%20ramzan.mp4" autoplay muted loop playsinline></video>
         <div class="phone-overlay"></div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
     </div>
   </section>
 
-  <!-- AI VIDEOS 16:9 scrollable -->
+  <!-- AI VIDEOS 16:9 -->
   <section id="ai-videos-wide">
     <div class="section-label reveal">Cinematic AI Video</div>
     <h2 class="section-title reveal reveal-delay-1">Widescreen.<br>Cinematic. Engineered.</h2>
     <div class="cinema-scroll reveal reveal-delay-2">
 
-      <!-- Card 1 — Flameborne -->
       <div class="cinema-frame">
         <div class="cinema-frame-thumb">
           <video src="https://github.com/J-NoorulFathima/Zeltria/raw/1997c6b7497bfa5053c9cb6b47ef8df679c99b7f/Flameborne.mp4" muted loop preload="metadata" playsinline></video>
@@ -1079,7 +1136,6 @@ footer{
         </div>
       </div>
 
-      <!-- Card 2 -->
       <div class="cinema-frame">
         <div class="cinema-frame-thumb">
           <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/AI%20Video%201.mp4" muted loop preload="metadata" playsinline></video>
@@ -1113,35 +1169,35 @@ footer{
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%201.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 01 · Retention-optimized</div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%202.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 02 · Cinematic pacing</div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%203.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 03 · Hook-driven cuts</div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%204.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 04 · Brand storytelling</div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
       <div class="edit-phone">
         <video src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/Video%205.mp4" autoplay muted loop playsinline></video>
         <div class="edit-phone-overlay"></div>
         <div class="edit-phone-label">Edit 05 · Scroll-stop format</div>
-        <button class="pip-btn" aria-label="Picture in Picture" title="Picture in Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
+        <button class="pip-btn" aria-label="Open Picture in Picture" title="Watch in Picture-in-Picture"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 7H5c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h2v-2H5V9h14v2h2V9c0-1.1-.9-2-2-2zM18 13h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-4c0-.55-.45-1-1-1z"/></svg></button>
       </div>
 
     </div>
@@ -1214,7 +1270,6 @@ footer{
 <!-- ═══════════════════════════════════════════ -->
 <div class="tab-panel" id="panel-posters">
 
-  <!-- Part Banner -->
   <div class="part-banner">
     <div class="part-banner-inner">
       <div>
@@ -1225,7 +1280,6 @@ footer{
     <div class="part-banner-num">02</div>
   </div>
 
-  <!-- POSTER SCROLL SECTION -->
   <section id="posters">
     <div class="poster-label">Brand Creatives &amp; Social Visuals</div>
     <div class="section-label reveal">Poster Portfolio</div>
@@ -1278,7 +1332,6 @@ footer{
 <!-- ═══════════════════════════════════════════ -->
 <div class="tab-panel" id="panel-linkedin">
 
-  <!-- Part Banner -->
   <div class="part-banner">
     <div class="part-banner-inner">
       <div>
@@ -1289,63 +1342,25 @@ footer{
     <div class="part-banner-num">03</div>
   </div>
 
-  <!-- LINKEDIN PORTFOLIO -->
   <section id="linkedin-port">
     <div class="section-label reveal">LinkedIn Portfolio</div>
     <h2 class="section-title reveal reveal-delay-1">Content that<br>drives real reach.</h2>
     <div class="linkedin-scroll reveal reveal-delay-2">
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/1l.png" alt="LinkedIn Post 1" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Hook-first structure · High engagement</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/2l.png" alt="LinkedIn Post 2" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Storytelling format · Strong retention</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/3l.png" alt="LinkedIn Post 3" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Visual-lead post · 3X reach boost</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/4l.png" alt="LinkedIn Post 4" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Authority content · Profile views spike</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/5l.png" alt="LinkedIn Post 5" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Engagement-optimized layout</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/6l.png" alt="LinkedIn Post 6" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Viral-format post · Inbound leads</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/7l.png" alt="LinkedIn Post 7" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Brand positioning content</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/8l.png" alt="LinkedIn Post 8" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Authority-building carousel</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/9l.png" alt="LinkedIn Post 9" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Thought leadership post</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/10l.png" alt="LinkedIn Post 10" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Connection-driven content</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/11l.png" alt="LinkedIn Post 11" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Scroll-stop visual hook</p></div>
-      </div>
-      <div class="linkedin-card">
-        <img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/12l.png" alt="LinkedIn Post 12" loading="lazy">
-        <div class="linkedin-card-body"><p class="linkedin-insight">Personal brand content</p></div>
-      </div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/1l.png" alt="LinkedIn Post 1" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Hook-first structure · High engagement</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/2l.png" alt="LinkedIn Post 2" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Storytelling format · Strong retention</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/3l.png" alt="LinkedIn Post 3" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Visual-lead post · 3X reach boost</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/4l.png" alt="LinkedIn Post 4" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Authority content · Profile views spike</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/5l.png" alt="LinkedIn Post 5" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Engagement-optimized layout</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/6l.png" alt="LinkedIn Post 6" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Viral-format post · Inbound leads</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/7l.png" alt="LinkedIn Post 7" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Brand positioning content</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/8l.png" alt="LinkedIn Post 8" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Authority-building carousel</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/9l.png" alt="LinkedIn Post 9" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Thought leadership post</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/10l.png" alt="LinkedIn Post 10" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Connection-driven content</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/11l.png" alt="LinkedIn Post 11" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Scroll-stop visual hook</p></div></div>
+      <div class="linkedin-card"><img src="https://raw.githubusercontent.com/J-NoorulFathima/linkedin-portfolio/main/12l.png" alt="LinkedIn Post 12" loading="lazy"><div class="linkedin-card-body"><p class="linkedin-insight">Personal brand content</p></div></div>
     </div>
   </section>
 
-  <!-- PROCESS -->
   <section id="process">
     <div class="section-label reveal">Process</div>
     <h2 class="section-title reveal reveal-delay-1">My LinkedIn<br>growth process.</h2>
@@ -1377,7 +1392,6 @@ footer{
     </div>
   </section>
 
-  <!-- LINKEDIN ACCOUNT HANDLING -->
   <section id="linkedin-more">
     <div class="lm-inner reveal">
       <div class="lm-left">
@@ -1389,13 +1403,8 @@ footer{
           </div>
           <span class="lm-eyebrow-text">LinkedIn Account Handling</span>
         </div>
-        <h2 class="lm-title">
-          Want to know more about<br>
-          <span>LinkedIn account handling?</span>
-        </h2>
-        <p class="lm-desc">
-          From profile optimisation and content strategy to full account management — explore the complete LinkedIn growth system built to position you as the authority in your niche.
-        </p>
+        <h2 class="lm-title">Want to know more about<br><span>LinkedIn account handling?</span></h2>
+        <p class="lm-desc">From profile optimisation and content strategy to full account management — explore the complete LinkedIn growth system built to position you as the authority in your niche.</p>
       </div>
       <div class="lm-right">
         <div class="lm-pills">
@@ -1413,7 +1422,6 @@ footer{
     </div>
   </section>
 
-  <!-- CTA -->
   <section id="cta">
     <div class="cta-glow"></div>
     <div class="section-label reveal">Ready?</div>
@@ -1426,117 +1434,30 @@ footer{
     </div>
   </section>
 
-  <!-- TESTIMONIALS -->
   <section id="testimonials">
     <div class="section-label reveal">Client Voice</div>
     <h2 class="section-title reveal reveal-delay-1">Results, in their<br>own words.</h2>
     <div class="testi-track-wrap reveal reveal-delay-2">
       <div class="testi-track">
-        <!-- Set A -->
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The AI video production exceeded expectations. The visuals, motion, and editing style make the content look cinematic and engaging. Great work!</p>
-          <div class="testi-author">
-            <div class="author-avatar">B2</div>
-            <div><div class="author-name">B2B Brand</div><div class="author-role">Enterprise Client</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">After LinkedIn profile optimization, my profile appeared in search results and I began receiving inbound client messages. The content strategy was extremely professional.</p>
-          <div class="testi-author">
-            <div class="author-avatar">FS</div>
-            <div><div class="author-name">Founder</div><div class="author-role">SaaS Startup</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The poster designs are visually stunning and perfectly communicate the message. These creatives helped my content stand out and attract more audience attention.</p>
-          <div class="testi-author">
-            <div class="author-avatar">BM</div>
-            <div><div class="author-name">Brand Manager</div><div class="author-role">Consumer Brand</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The poster designs and AI videos completely changed how my LinkedIn content performs. My posts now get much higher engagement and reach. The visuals look very premium.</p>
-          <div class="testi-author">
-            <div class="author-avatar">MC</div>
-            <div><div class="author-name">Marketing Consultant</div><div class="author-role">Independent</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The AI videos created were incredibly engaging and modern. The storytelling, visuals, and animation style made the content look very premium — gave our brand a fresh feel.</p>
-          <div class="testi-author">
-            <div class="author-avatar">DM</div>
-            <div><div class="author-name">Digital Marketing Specialist</div><div class="author-role">Agency</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">From profile optimization to poster design and content planning, everything was handled professionally. My LinkedIn now looks like a premium personal brand.</p>
-          <div class="testi-author">
-            <div class="author-avatar">FC</div>
-            <div><div class="author-name">Freelance Consultant</div><div class="author-role">Personal Brand</div></div>
-          </div>
-        </div>
-        <!-- Set B — duplicate for seamless loop -->
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The AI video production exceeded expectations. The visuals, motion, and editing style make the content look cinematic and engaging. Great work!</p>
-          <div class="testi-author">
-            <div class="author-avatar">B2</div>
-            <div><div class="author-name">B2B Brand</div><div class="author-role">Enterprise Client</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">After LinkedIn profile optimization, my profile appeared in search results and I began receiving inbound client messages. The content strategy was extremely professional.</p>
-          <div class="testi-author">
-            <div class="author-avatar">FS</div>
-            <div><div class="author-name">Founder</div><div class="author-role">SaaS Startup</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The poster designs are visually stunning and perfectly communicate the message. These creatives helped my content stand out and attract more audience attention.</p>
-          <div class="testi-author">
-            <div class="author-avatar">BM</div>
-            <div><div class="author-name">Brand Manager</div><div class="author-role">Consumer Brand</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The poster designs and AI videos completely changed how my LinkedIn content performs. My posts now get much higher engagement and reach. The visuals look very premium.</p>
-          <div class="testi-author">
-            <div class="author-avatar">MC</div>
-            <div><div class="author-name">Marketing Consultant</div><div class="author-role">Independent</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">The AI videos created were incredibly engaging and modern. The storytelling, visuals, and animation style made the content look very premium — gave our brand a fresh feel.</p>
-          <div class="testi-author">
-            <div class="author-avatar">DM</div>
-            <div><div class="author-name">Digital Marketing Specialist</div><div class="author-role">Agency</div></div>
-          </div>
-        </div>
-        <div class="testi-card">
-          <span class="quote-mark">"</span>
-          <p class="testi-text">From profile optimization to poster design and content planning, everything was handled professionally. My LinkedIn now looks like a premium personal brand.</p>
-          <div class="testi-author">
-            <div class="author-avatar">FC</div>
-            <div><div class="author-name">Freelance Consultant</div><div class="author-role">Personal Brand</div></div>
-          </div>
-        </div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The AI video production exceeded expectations. The visuals, motion, and editing style make the content look cinematic and engaging. Great work!</p><div class="testi-author"><div class="author-avatar">B2</div><div><div class="author-name">B2B Brand</div><div class="author-role">Enterprise Client</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">After LinkedIn profile optimization, my profile appeared in search results and I began receiving inbound client messages. The content strategy was extremely professional.</p><div class="testi-author"><div class="author-avatar">FS</div><div><div class="author-name">Founder</div><div class="author-role">SaaS Startup</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The poster designs are visually stunning and perfectly communicate the message. These creatives helped my content stand out and attract more audience attention.</p><div class="testi-author"><div class="author-avatar">BM</div><div><div class="author-name">Brand Manager</div><div class="author-role">Consumer Brand</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The poster designs and AI videos completely changed how my LinkedIn content performs. My posts now get much higher engagement and reach. The visuals look very premium.</p><div class="testi-author"><div class="author-avatar">MC</div><div><div class="author-name">Marketing Consultant</div><div class="author-role">Independent</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The AI videos created were incredibly engaging and modern. The storytelling, visuals, and animation style made the content look very premium — gave our brand a fresh feel.</p><div class="testi-author"><div class="author-avatar">DM</div><div><div class="author-name">Digital Marketing Specialist</div><div class="author-role">Agency</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">From profile optimization to poster design and content planning, everything was handled professionally. My LinkedIn now looks like a premium personal brand.</p><div class="testi-author"><div class="author-avatar">FC</div><div><div class="author-name">Freelance Consultant</div><div class="author-role">Personal Brand</div></div></div></div>
+        <!-- Duplicate set for seamless loop -->
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The AI video production exceeded expectations. The visuals, motion, and editing style make the content look cinematic and engaging. Great work!</p><div class="testi-author"><div class="author-avatar">B2</div><div><div class="author-name">B2B Brand</div><div class="author-role">Enterprise Client</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">After LinkedIn profile optimization, my profile appeared in search results and I began receiving inbound client messages. The content strategy was extremely professional.</p><div class="testi-author"><div class="author-avatar">FS</div><div><div class="author-name">Founder</div><div class="author-role">SaaS Startup</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The poster designs are visually stunning and perfectly communicate the message. These creatives helped my content stand out and attract more audience attention.</p><div class="testi-author"><div class="author-avatar">BM</div><div><div class="author-name">Brand Manager</div><div class="author-role">Consumer Brand</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The poster designs and AI videos completely changed how my LinkedIn content performs. My posts now get much higher engagement and reach. The visuals look very premium.</p><div class="testi-author"><div class="author-avatar">MC</div><div><div class="author-name">Marketing Consultant</div><div class="author-role">Independent</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">The AI videos created were incredibly engaging and modern. The storytelling, visuals, and animation style made the content look very premium — gave our brand a fresh feel.</p><div class="testi-author"><div class="author-avatar">DM</div><div><div class="author-name">Digital Marketing Specialist</div><div class="author-role">Agency</div></div></div></div>
+        <div class="testi-card"><span class="quote-mark">"</span><p class="testi-text">From profile optimization to poster design and content planning, everything was handled professionally. My LinkedIn now looks like a premium personal brand.</p><div class="testi-author"><div class="author-avatar">FC</div><div><div class="author-name">Freelance Consultant</div><div class="author-role">Personal Brand</div></div></div></div>
       </div>
     </div>
   </section>
 
 </div><!-- /panel-linkedin -->
 
-<!-- FOOTER -->
 <footer>
   <div class="footer-logo">Zeltria_vision</div>
   <div class="footer-copy">© 2026 Zeltria_vision Portfolio</div>
@@ -1568,12 +1489,11 @@ function switchTab(tab) {
   setTimeout(triggerReveals, 100);
 }
 
-// ── DETECT TOUCH DEVICE ──
-var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-
 // ── CINEMA FRAMES: play/pause with sound ──
 document.addEventListener('DOMContentLoaded', function() {
   triggerReveals();
+
+  var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   document.querySelectorAll('.cinema-frame').forEach(function(frame) {
     var thumb = frame.querySelector('.cinema-frame-thumb');
@@ -1608,9 +1528,7 @@ document.addEventListener('DOMContentLoaded', function() {
             togglePlay();
           } else {
             thumb.classList.add('touch-peek');
-            setTimeout(function() {
-              thumb.classList.remove('touch-peek');
-            }, 1800);
+            setTimeout(function() { thumb.classList.remove('touch-peek'); }, 1800);
           }
         } else {
           togglePlay();
@@ -1635,52 +1553,41 @@ document.addEventListener('DOMContentLoaded', function() {
   var lbBackdrop = document.getElementById('posterLbBackdrop');
 
   function openLightbox(src, alt, label) {
-    lbImg.src = src;
-    lbImg.alt = alt || '';
+    lbImg.src = src; lbImg.alt = alt || '';
     lbLabel.textContent = label || '';
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
     lbClose.focus();
   }
-
   function closeLightbox() {
     lightbox.classList.remove('open');
     document.body.style.overflow = '';
-    setTimeout(function() {
-      if (!lightbox.classList.contains('open')) lbImg.src = '';
-    }, 400);
+    setTimeout(function() { if (!lightbox.classList.contains('open')) lbImg.src = ''; }, 400);
   }
 
   document.querySelectorAll('.poster-frame').forEach(function(frame) {
     frame.addEventListener('click', function() {
-      var img   = frame.querySelector('img');
-      var label = frame.dataset.label || (frame.querySelector('.poster-frame-label') ? frame.querySelector('.poster-frame-label').textContent : '') || '';
+      var img = frame.querySelector('img');
+      var label = frame.dataset.label || '';
       if (img) openLightbox(img.src, img.alt, label);
     });
     frame.setAttribute('tabindex', '0');
     frame.setAttribute('role', 'button');
     frame.setAttribute('aria-label', 'Preview ' + (frame.dataset.label || 'poster'));
     frame.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        frame.click();
-      }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); frame.click(); }
     });
   });
 
   lbClose.addEventListener('click', closeLightbox);
   lbBackdrop.addEventListener('click', closeLightbox);
-
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
   });
-
-  document.querySelector('.poster-lb-inner').addEventListener('click', function(e) {
-    e.stopPropagation();
-  });
+  document.querySelector('.poster-lb-inner').addEventListener('click', function(e) { e.stopPropagation(); });
 });
 
-// ── SCROLL: trigger reveals ──
+// ── SCROLL / REVEALS ──
 window.addEventListener('scroll', triggerReveals, { passive: true });
 
 // ── COUNTER ANIMATION ──
@@ -1718,9 +1625,12 @@ window.addEventListener('scroll', function() {
 }, { passive: true });
 
 // ═══════════════════════════════════════════════════════
-// PICTURE-IN-PICTURE  — phone-frame & edit-phone videos
-// Works on: Android Chrome, Samsung Browser, Chrome desktop,
-//           Edge, Firefox, Safari desktop, Safari iOS (WebKit PiP)
+// PICTURE-IN-PICTURE  — Revised for all devices
+// Key fixes:
+//   1. PiP button always visible (not opacity:0 on mobile)
+//   2. Video unmuted + playing with audio before PiP launch
+//   3. Robust fallback chain: Standard API → WebKit API
+//   4. On iOS, video must be playing + user-gesture initiated
 // ═══════════════════════════════════════════════════════
 (function() {
   'use strict';
@@ -1729,77 +1639,117 @@ window.addEventListener('scroll', function() {
   var pipBackBtn   = document.getElementById('pip-back-btn');
   var activePipVid = null;
 
-  // ── Banner helpers ──
-  function showBanner() {
-    if (pipBanner) pipBanner.classList.add('pip-visible');
+  function showBanner(videoTitle) {
+    if (pipBanner) {
+      var label = document.getElementById('pip-back-label');
+      if (label) label.textContent = videoTitle ? ('Playing: ' + videoTitle) : 'Playing in Picture-in-Picture';
+      pipBanner.classList.add('pip-visible');
+    }
   }
   function hideBanner() {
     if (pipBanner) pipBanner.classList.remove('pip-visible');
     activePipVid = null;
   }
 
-  // ── Feature detection ──
-  function standardPipOk() {
-    return !!document.pictureInPictureEnabled;
+  function supportsStandardPip() {
+    return !!(document.pictureInPictureEnabled);
   }
-  function webkitPipOk(video) {
+  function supportsWebkitPip(video) {
     return typeof video.webkitSupportsPresentationMode === 'function' &&
            video.webkitSupportsPresentationMode('picture-in-picture');
   }
 
-  // ── Launch / toggle PiP for a given video ──
-  function launchPip(video) {
-    // — Standard API (Chrome, Edge, Firefox, Android Chrome) —
-    if (standardPipOk()) {
-      if (document.pictureInPictureElement === video) {
-        // Already in PiP → exit
-        document.exitPictureInPicture().catch(function() {});
+  /**
+   * Core PiP launcher — always unmutes + plays video first so
+   * audio works inside the PiP window on all platforms.
+   */
+  function launchPip(video, container) {
+    // ── Unmute and ensure video is playing with audio ──
+    // Videos are looping & muted by default. We need to:
+    // 1. Unmute
+    // 2. Trigger play (required by mobile browsers before PiP)
+    // 3. Then request PiP
+    video.muted = false;
+    video.loop  = true;
+
+    function doRequestPip() {
+      // ── Standard PiP API (Chrome, Edge, Firefox, Android Chrome) ──
+      if (supportsStandardPip()) {
+        // If already in PiP, exit
+        if (document.pictureInPictureElement === video) {
+          document.exitPictureInPicture().catch(function() {});
+          return;
+        }
+        video.requestPictureInPicture()
+          .then(function() {
+            activePipVid = video;
+            showBanner();
+          })
+          .catch(function(err) {
+            console.warn('[PiP] Standard API failed:', err && err.message || err);
+            // Fall through to WebKit if standard fails
+            tryWebkitPip();
+          });
         return;
       }
-      // Ensure the video element is actually playing (required on some mobile browsers)
-      var p = video.play();
-      function requestPip() {
-        video.requestPictureInPicture().then(function() {
-          activePipVid = video;
-          showBanner();
-        }).catch(function(err) {
-          console.warn('[PiP] requestPictureInPicture failed:', err && err.message || err);
-        });
-      }
-      if (p && typeof p.then === 'function') {
-        p.then(requestPip).catch(requestPip); // try PiP even if play() rejects
-      } else {
-        requestPip();
-      }
-      return;
+      // No standard API — try WebKit
+      tryWebkitPip();
     }
 
-    // — WebKit API (Safari desktop + iOS Safari) —
-    if (webkitPipOk(video)) {
-      if (video.webkitPresentationMode === 'picture-in-picture') {
-        video.webkitSetPresentationMode('inline');
-        hideBanner();
+    function tryWebkitPip() {
+      // ── WebKit PiP API (Safari desktop + iOS Safari 14+) ──
+      if (supportsWebkitPip(video)) {
+        if (video.webkitPresentationMode === 'picture-in-picture') {
+          video.webkitSetPresentationMode('inline');
+          hideBanner();
+        } else {
+          try {
+            video.webkitSetPresentationMode('picture-in-picture');
+            activePipVid = video;
+            showBanner();
+          } catch(e) {
+            console.warn('[PiP] WebKit API failed:', e);
+          }
+        }
       } else {
-        video.play().catch(function() {});
-        video.webkitSetPresentationMode('picture-in-picture');
-        activePipVid = video;
-        showBanner();
+        // Neither API supported — mark button as unsupported
+        var btn = container ? container.querySelector('.pip-btn') : null;
+        if (btn) btn.classList.add('pip-unsupported');
+      }
+    }
+
+    // Play with audio, then request PiP
+    // If video is already playing, just request PiP directly
+    if (!video.paused) {
+      doRequestPip();
+    } else {
+      var playPromise = video.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise
+          .then(doRequestPip)
+          .catch(function() {
+            // Play was blocked (autoplay policy) — still try PiP
+            // Some browsers allow PiP even without active play
+            doRequestPip();
+          });
+      } else {
+        doRequestPip();
       }
     }
   }
 
-  // ── Attach PiP button to one container ──
+  // ── Attach PiP button to a container (.phone-frame or .edit-phone) ──
   function attachPip(container) {
     var video = container.querySelector('video');
     var btn   = container.querySelector('.pip-btn');
     if (!video || !btn) return;
 
-    // Visibility check once metadata is available
+    // Check support when metadata loads (needed for WebKit check)
     function checkSupport() {
-      var ok = standardPipOk() ||
-               (typeof video.webkitSupportsPresentationMode === 'function' &&
-                video.webkitSupportsPresentationMode('picture-in-picture'));
-      if (!ok) btn.classList.add('pip-unsupported');
+      var ok = supportsStandardPip() || supportsWebkitPip(video);
+      if (!ok) {
+        btn.classList.add('pip-unsupported');
+      }
     }
     if (video.readyState >= 1) {
       checkSupport();
@@ -1807,25 +1757,34 @@ window.addEventListener('scroll', function() {
       video.addEventListener('loadedmetadata', checkSupport, { once: true });
     }
 
-    // Prevent click from bubbling to parent (cinema frame toggle etc.)
-    function activate(e) {
+    // Handle click/touch — must be in user gesture for mobile PiP
+    function onActivate(e) {
       e.preventDefault();
       e.stopPropagation();
-      launchPip(video);
+      launchPip(video, container);
     }
-    btn.addEventListener('click',    activate);
-    btn.addEventListener('touchend', activate);
+
+    btn.addEventListener('click',    onActivate);
+    // touchend for mobile — ensures we're inside a user gesture
+    btn.addEventListener('touchend', onActivate);
   }
 
   // ── Back-to-tab button ──
   if (pipBackBtn) {
     pipBackBtn.addEventListener('click', function() {
       if (document.pictureInPictureElement) {
-        document.exitPictureInPicture().then(hideBanner).catch(hideBanner);
+        document.exitPictureInPicture()
+          .then(function() {
+            hideBanner();
+            // Re-mute the video when returning to tab
+            if (activePipVid) { activePipVid.muted = true; }
+          })
+          .catch(hideBanner);
       } else if (activePipVid &&
                  typeof activePipVid.webkitPresentationMode !== 'undefined' &&
                  activePipVid.webkitPresentationMode === 'picture-in-picture') {
         activePipVid.webkitSetPresentationMode('inline');
+        activePipVid.muted = true;
         hideBanner();
       } else {
         hideBanner();
@@ -1833,14 +1792,20 @@ window.addEventListener('scroll', function() {
     });
   }
 
-  // ── Global PiP events (standard API) ──
+  // ── Global Standard PiP events ──
   document.addEventListener('enterpictureinpicture', function(e) {
     activePipVid = e.target;
     showBanner();
   });
-  document.addEventListener('leavepictureinpicture', hideBanner);
+  document.addEventListener('leavepictureinpicture', function() {
+    // Re-mute the video when PiP is dismissed
+    if (activePipVid) {
+      activePipVid.muted = true;
+    }
+    hideBanner();
+  });
 
-  // ── Init: wire up all existing containers ──
+  // ── Init all containers on DOM ready ──
   function init() {
     document.querySelectorAll('.phone-frame, .edit-phone').forEach(attachPip);
   }
